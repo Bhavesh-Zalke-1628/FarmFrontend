@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axiosInstance from "../../Helper/axiosInstance";
+import { toast } from "react-toastify";
 
 const initialState = {
     isLoading: false,
@@ -23,7 +24,7 @@ export const createStore = createAsyncThunk('/create-store', async (data) => {
         console.log(res)
         return res.data;
     } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Something went wrong");
+        console.log(error)
     }
 })
 

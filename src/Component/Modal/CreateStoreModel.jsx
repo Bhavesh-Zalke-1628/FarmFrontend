@@ -1,3 +1,4 @@
+// CreateStoreModal.jsx
 import React, { useState } from "react";
 import {
     Modal,
@@ -14,13 +15,15 @@ import {
     purchaseCourseBundle,
     verifyUserPayment,
 } from "../../Redux/Slice/paymentSlice";
-import { createStore } from "../../Redux/Slice/storeSlice";
 import { toast } from "react-toastify";
+import { createStore } from "../../Redux/Slice/storeSlice";
 
 const CreateStoreModal = ({ open, handleClose }) => {
     const dispatch = useDispatch();
-    const razorpayKey = useSelector((state) => state?.payment?.key);
-    const subscription_id = useSelector((state) => state?.payment?.subscription_id);
+
+    // ❌ DON'T use async in useSelector
+    const razorpayKey = useSelector((state) => state.payment.key);
+    const subscription_id = useSelector((state) => state.payment.subscription_id);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -40,58 +43,61 @@ const CreateStoreModal = ({ open, handleClose }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
     const handleSubmit = async () => {
         try {
-            await dispatch(getRazorPayId());
-            await dispatch(purchaseCourseBundle());
+            console.log("📦 Starting store creation flow...");
+
+            // Step 1: Get Razorpay key
+            const keyRes = await dispatch(getRazorPayId()).unwrap();
+            console.log("✅ Razorpay Key Fetched:", keyRes);
+
+            // Step 2: Create subscription
+            const subRes = await dispatch(purchaseCourseBundle()).unwrap();
+            console.log("✅ Subscription Created:", subRes);
+
+            console.log("📘 Current Razorpay State:", { razorpayKey, subscription_id });
 
             if (!razorpayKey || !subscription_id) {
+                console.error("❌ Razorpay setup failed: Missing key or subscription_id");
                 toast.error("Razorpay setup failed");
-                return;
-            }
-
-            const isLoaded = await loadRazorpayScript();
-            if (!isLoaded) {
-                toast.error("Failed to load Razorpay SDK");
                 return;
             }
 
             const options = {
                 key: razorpayKey,
-                subscription_id: subscription_id,
+                subscription_id,
                 name: "e-Shiksha Pvt. Ltd.",
                 description: "Store Subscription",
-                theme: { color: "#F37254" },
+                theme: { color: "#00BFFF" },
                 handler: async function (response) {
-                    const paymentDetails = {
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_subscription_id: response.razorpay_subscription_id,
-                        razorpay_signature: response.razorpay_signature,
-                    };
+                    console.log("💳 Payment Response from Razorpay:", response);
 
-                    const storeResponse = await dispatch(createStore(formData));
+                    const storeRes = await dispatch(createStore(formData));
+                    const storeId = storeRes?.payload?.data?._id;
 
-                    if (res?.payload?.success) {
-                        const res = await dispatch(verifyUserPayment(paymentDetails));
-                        console.log(res)
-                        if (storeResponse?.payload?.success) {
-                            Swal.fire("Success", "Store created & payment done!", "success");
+                    console.log("🏪 Store creation response:", storeRes);
+
+                    if (storeId) {
+                        const paymentDetails = {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_subscription_id: response.razorpay_subscription_id,
+                            razorpay_signature: response.razorpay_signature,
+                            storeId,
+                        };
+
+                        console.log("🔐 Verifying Payment With Details:", paymentDetails);
+
+                        const verifyRes = await dispatch(verifyUserPayment(paymentDetails));
+                        console.log("✅ Payment Verification Response:", verifyRes);
+
+                        if (verifyRes?.payload?.success) {
+                            Swal.fire("Success", "Store created & payment verified!", "success");
                             handleClose();
                         } else {
-                            Swal.fire("Store Error", "Payment was fine, but store not created", "warning");
+                            Swal.fire("Warning", "Payment done but verification failed", "warning");
                         }
                     } else {
-                        Swal.fire("Failed", "Payment verification failed", "error");
+                        Swal.fire("Error", "Store not created", "error");
                     }
                 },
                 prefill: {
@@ -101,29 +107,23 @@ const CreateStoreModal = ({ open, handleClose }) => {
                 },
             };
 
-            window.Razorpay(options).open(); // ✅ this is what you asked
+            console.log("🚀 Launching Razorpay Checkout with options:", options);
+            new window.Razorpay(options).open();
         } catch (error) {
+            console.error("❌ Error in create store flow:", error);
             Swal.fire("Error", error.message || "Something went wrong", "error");
         }
     };
 
-    return (
-        <Modal open={open} onClose={handleClose} aria-labelledby="create-store-modal">
-            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-70">
-                <div className="relative p-6 w-full max-w-md bg-white rounded-lg shadow-lg dark:bg-gray-800">
-                    <div className="flex items-center justify-between pb-4 border-b border-gray-300 dark:border-gray-600">
-                        <Typography variant="h6" className="text-gray-900 dark:text-white font-semibold">
-                            🚀 Create New Store
-                        </Typography>
-                        <button
-                            type="button"
-                            className="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg w-8 h-8 flex items-center justify-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            onClick={handleClose}
-                        >
-                            ✖
-                        </button>
-                    </div>
 
+    return (
+        <Modal open={open} onClose={handleClose}>
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-70">
+                <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
+                    <div className="flex items-center justify-between pb-4 border-b">
+                        <Typography variant="h6">🚀 Create New Store</Typography>
+                        <button onClick={handleClose} className="text-xl">✖</button>
+                    </div>
                     <form className="space-y-4 mt-4">
                         {fields.map(({ label, name, type = "text", icon }) => (
                             <TextField
@@ -136,15 +136,16 @@ const CreateStoreModal = ({ open, handleClose }) => {
                                 value={formData[name]}
                                 onChange={handleChange}
                                 InputProps={{
-                                    startAdornment: <InputAdornment position="start">{icon}</InputAdornment>,
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            {icon}
+                                        </InputAdornment>
+                                    ),
                                 }}
                             />
                         ))}
-
                         <div className="flex justify-end gap-4 mt-4">
-                            <Button onClick={handleClose} color="error" variant="contained">
-                                Cancel
-                            </Button>
+                            <Button onClick={handleClose} color="error" variant="contained">Cancel</Button>
                             <Button onClick={handleSubmit} color="primary" variant="contained">
                                 Proceed to payment
                             </Button>
