@@ -1,15 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authSlice from './Slice/authSlice.js'
-import storeSlice from './Slice/storeSlice.js'
-import razorpaySlice from './Slice/paymentSlice.js'
+import authSlice from './Slice/authSlice';
+import storeSlice from './Slice/storeSlice';
+import razorpaySlice from './Slice/paymentSlice';
+
 const store = configureStore({
     reducer: {
         auth: authSlice,
         store: storeSlice,
-        payment: razorpaySlice
+        payment: razorpaySlice,
     },
-    devTools: true
-})
+    devTools: process.env.NODE_ENV !== 'production', // Enable dev tools only in development
+});
 
-
-export default store
+export default store;
