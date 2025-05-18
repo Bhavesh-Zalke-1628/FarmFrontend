@@ -93,7 +93,6 @@ export const logoutAccount = createAsyncThunk("/logout", async (_, { fulfillWith
         localStorage.removeItem("role");
         localStorage.removeItem("data");
         localStorage.removeItem("token");
-        console.log(res)
 
         return res.data
 

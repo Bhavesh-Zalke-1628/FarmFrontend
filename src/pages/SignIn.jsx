@@ -33,7 +33,6 @@ function SignIn() {
 
         try {
             const res = await dispatch(loginAccount({ mobileNumber: signInData.mobileNumber, password: signInData.password }))
-            console.log(res)
             if (res.payload.success) {
                 navigate('/');
             } else {

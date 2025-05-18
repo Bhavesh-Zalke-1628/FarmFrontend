@@ -1,4 +1,3 @@
-// CreateStoreModal.jsx
 import React, { useState } from "react";
 import {
     Modal,
@@ -21,7 +20,6 @@ import { createStore } from "../../Redux/Slice/storeSlice";
 const CreateStoreModal = ({ open, handleClose }) => {
     const dispatch = useDispatch();
 
-    // ❌ DON'T use async in useSelector
     const razorpayKey = useSelector((state) => state.payment.key);
     const subscription_id = useSelector((state) => state.payment.subscription_id);
 
@@ -45,20 +43,10 @@ const CreateStoreModal = ({ open, handleClose }) => {
 
     const handleSubmit = async () => {
         try {
-            console.log("📦 Starting store creation flow...");
-
-            // Step 1: Get Razorpay key
-            const keyRes = await dispatch(getRazorPayId()).unwrap();
-            console.log("✅ Razorpay Key Fetched:", keyRes);
-
-            // Step 2: Create subscription
-            const subRes = await dispatch(purchaseCourseBundle()).unwrap();
-            console.log("✅ Subscription Created:", subRes);
-
-            console.log("📘 Current Razorpay State:", { razorpayKey, subscription_id });
+            await dispatch(getRazorPayId()).unwrap();
+            await dispatch(purchaseCourseBundle()).unwrap();
 
             if (!razorpayKey || !subscription_id) {
-                console.error("❌ Razorpay setup failed: Missing key or subscription_id");
                 toast.error("Razorpay setup failed");
                 return;
             }
@@ -70,12 +58,8 @@ const CreateStoreModal = ({ open, handleClose }) => {
                 description: "Store Subscription",
                 theme: { color: "#00BFFF" },
                 handler: async function (response) {
-                    console.log("💳 Payment Response from Razorpay:", response);
-
                     const storeRes = await dispatch(createStore(formData));
                     const storeId = storeRes?.payload?.data?._id;
-
-                    console.log("🏪 Store creation response:", storeRes);
 
                     if (storeId) {
                         const paymentDetails = {
@@ -85,10 +69,7 @@ const CreateStoreModal = ({ open, handleClose }) => {
                             storeId,
                         };
 
-                        console.log("🔐 Verifying Payment With Details:", paymentDetails);
-
                         const verifyRes = await dispatch(verifyUserPayment(paymentDetails));
-                        console.log("✅ Payment Verification Response:", verifyRes);
 
                         if (verifyRes?.payload?.success) {
                             Swal.fire("Success", "Store created & payment verified!", "success");
@@ -107,24 +88,30 @@ const CreateStoreModal = ({ open, handleClose }) => {
                 },
             };
 
-            console.log("🚀 Launching Razorpay Checkout with options:", options);
             new window.Razorpay(options).open();
         } catch (error) {
-            console.error("❌ Error in create store flow:", error);
             Swal.fire("Error", error.message || "Something went wrong", "error");
         }
     };
 
-
     return (
         <Modal open={open} onClose={handleClose}>
             <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-70">
-                <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
-                    <div className="flex items-center justify-between pb-4 border-b">
-                        <Typography variant="h6">🚀 Create New Store</Typography>
-                        <button onClick={handleClose} className="text-xl">✖</button>
+                <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+                    <div className="flex items-center justify-between border-b pb-3">
+                        <Typography variant="h6" className="font-semibold flex items-center gap-2">
+                            <Store size={24} /> Create New Store
+                        </Typography>
+                        <button
+                            onClick={handleClose}
+                            className="text-2xl font-bold hover:text-gray-700 transition"
+                            aria-label="Close modal"
+                        >
+                            &times;
+                        </button>
                     </div>
-                    <form className="space-y-4 mt-4">
+
+                    <form className="mt-6 space-y-5">
                         {fields.map(({ label, name, type = "text", icon }) => (
                             <TextField
                                 key={name}
@@ -137,17 +124,33 @@ const CreateStoreModal = ({ open, handleClose }) => {
                                 onChange={handleChange}
                                 InputProps={{
                                     startAdornment: (
-                                        <InputAdornment position="start">
+                                        <InputAdornment position="start" className="text-gray-600">
                                             {icon}
                                         </InputAdornment>
                                     ),
                                 }}
+                                size="small"
                             />
                         ))}
-                        <div className="flex justify-end gap-4 mt-4">
-                            <Button onClick={handleClose} color="error" variant="contained">Cancel</Button>
-                            <Button onClick={handleSubmit} color="primary" variant="contained">
-                                Proceed to payment
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button
+                                onClick={handleClose}
+                                color="error"
+                                variant="outlined"
+                                size="medium"
+                                className="font-medium"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                color="primary"
+                                variant="contained"
+                                size="medium"
+                                className="font-semibold"
+                            >
+                                Proceed to Payment
                             </Button>
                         </div>
                     </form>

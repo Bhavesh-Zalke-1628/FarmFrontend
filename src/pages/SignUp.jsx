@@ -13,7 +13,6 @@ function SignUp() {
         password: '',
     });
 
-    console.log(signUpData)
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -31,9 +30,6 @@ function SignUp() {
 
         try {
             const res = await dispatch(createAccount(signUpData)).unwrap(); // Ensures proper error handling
-            console.log(res)
-
-
             if (res.success) {
                 navigate('/dashboard');
             } else {

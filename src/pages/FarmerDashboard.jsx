@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-    Menu, X, Home, Store, LogOut, Leaf, DollarSign
+    Menu, X, Home, Store, LogOut, Leaf, DollarSign, Package,
 } from "lucide-react";
 import Layout from '../Layout/Layout';
 import ShowStore from "../Component/Store/ShowStore";
@@ -10,15 +10,24 @@ import { useNavigate } from "react-router-dom";
 
 function FarmerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("dashboard");
+    const [activeTab, setActiveTab] = useState(() => {
+        return localStorage.getItem("farmerActiveTab") || "dashboard";
+    });
 
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        localStorage.setItem("farmerActiveTab", tab);
+        setSidebarOpen(false);
+    };
+
     async function handleLogout() {
-        const res = await dispatch(logoutAccount())
-        console.log(res)
+        localStorage.removeItem("farmerActiveTab");
+        const res = await dispatch(logoutAccount());
         if (res?.payload?.success) {
-            navigate("/")
+            navigate("/");
         }
     }
 
@@ -28,6 +37,8 @@ function FarmerDashboard() {
                 return <h1 className="text-2xl font-bold">🌾 Welcome to Farmer Dashboard</h1>;
             case "store":
                 return <ShowStore />;
+            case "product":
+                return <h1 className="text-2xl font-bold">📦 My Products</h1>;
             case "crops":
                 return <h1 className="text-2xl font-bold">🌱 Manage Crops</h1>;
             case "earnings":
@@ -48,20 +59,45 @@ function FarmerDashboard() {
                     </button>
 
                     <h2 className="text-xl font-bold mb-6">🌾 Farmer Panel</h2>
-                    <ul className="space-y-4">
-                        <li onClick={() => setActiveTab("dashboard")} className="flex items-center gap-2 cursor-pointer hover:text-yellow-300">
+
+                    <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-100px)]">
+                        <li
+                            onClick={() => handleTabChange("dashboard")}
+                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "dashboard" ? "text-yellow-300 font-semibold" : ""}`}
+                        >
                             <Home size={20} /> Dashboard
                         </li>
-                        <li onClick={() => setActiveTab("store")} className="flex items-center gap-2 cursor-pointer hover:text-yellow-300">
+                        <li
+                            onClick={() => handleTabChange("store")}
+                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "store" ? "text-yellow-300 font-semibold" : ""}`}
+                        >
                             <Store size={20} /> My Store
                         </li>
-                        <li onClick={() => setActiveTab("crops")} className="flex items-center gap-2 cursor-pointer hover:text-yellow-300">
+                        <li
+                            onClick={() => handleTabChange("product")}
+                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "product" ? "text-yellow-300 font-semibold" : ""}`}
+                        >
+                            <Package size={20} /> Product
+                        </li>
+                        <li
+                            onClick={() => handleTabChange("crops")}
+                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "crops" ? "text-yellow-300 font-semibold" : ""}`}
+                        >
                             <Leaf size={20} /> Crops
                         </li>
-                        <li onClick={() => setActiveTab("earnings")} className="flex items-center gap-2 cursor-pointer hover:text-yellow-300">
+                        <li
+                            onClick={() => handleTabChange("earnings")}
+                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "earnings" ? "text-yellow-300 font-semibold" : ""}`}
+                        >
                             <DollarSign size={20} /> Earnings
                         </li>
-                        <li onClick={handleLogout} className="flex items-center gap-2 cursor-pointer hover:text-red-300">
+                        <li
+                            onClick={() => {
+                                handleLogout();
+                                setSidebarOpen(false);
+                            }}
+                            className="flex items-center gap-2 cursor-pointer hover:text-red-300"
+                        >
                             <LogOut size={20} /> Logout
                         </li>
                     </ul>
