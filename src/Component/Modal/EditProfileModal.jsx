@@ -13,15 +13,18 @@ function EditProfileModal({ initialData, onClose }) {
         address: ''
     });
 
+
+
     useEffect(() => {
         if (initialData) {
+            console.log(initialData)
             setFormData({
                 fullName: initialData.fullName || '',
                 email: initialData.email || '',
                 mobileNumber: initialData.mobileNumber || '',
                 address: initialData.address || '',
-                farmName: initialData.farm.farmName || '',
-                location: initialData.farm.location || '',
+                farmName: initialData?.farm?.farmName || '',
+                location: initialData?.farm?.location || ''
             });
         }
     }, [initialData]);

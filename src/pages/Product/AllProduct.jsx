@@ -59,15 +59,11 @@ function AllProduct() {
         dispatch(addToCart({ ...product, productId: product._id, quantity: 1 }));
 
         Swal.fire({
-            position: 'top-end',
+            position: 'center',
             icon: 'success',
             title: 'Added to cart!',
             showConfirmButton: false,
-            timer: 1000,
-            customClass: {
-                popup: 'custom-swal-popup',
-                title: 'custom-swal-title'
-            }
+            timer: 500,
         });
     };
 

@@ -6,7 +6,7 @@ import EditProfileModal from '../Component/Modal/EditProfileModal'
 function Profile() {
     const { data: userData } = useSelector((state) => state.auth);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    console.log(userData)
+    console.log(userData)   
 
     return (
         <div className="flex flex-col md:flex-row gap-8">

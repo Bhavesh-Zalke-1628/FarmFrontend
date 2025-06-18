@@ -14,9 +14,9 @@ function Home() {
     const { isLoggedIn } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        if (isLoggedIn) {
-            dispatch(getAllProduct());
-        }
+        // if (isLoggedIn) {
+        dispatch(getAllProduct());
+        // }
     }, [dispatch, isLoggedIn]);
 
     const handleProductClick = (productId) => {

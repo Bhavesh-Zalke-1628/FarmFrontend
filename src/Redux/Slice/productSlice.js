@@ -35,11 +35,27 @@ export const getProductById = createAsyncThunk(
     }
 );
 
+export const getProductByStoreId = createAsyncThunk(
+    "product/getstoreById",
+    async (storeId, { rejectWithValue }) => {
+        try {
+            console.log(storeId)
+            const res = await axiosInstance.get(`/product/get-store-product/${storeId}`);
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch product");
+        }
+    }
+);
+
 // Create Product
 export const createProduct = createAsyncThunk(
     "product/create",
     async ({ storeId, ...productData }, { rejectWithValue }) => {
         try {
+
+console.log(productData)
+
             const res = await toast.promise(
                 axiosInstance.post(`/product/create-product/${storeId}`, productData),
                 {
@@ -250,6 +266,11 @@ const productSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
                 toast.error(action.payload);
+            })
+
+            .addCase(getProductByStoreId.fulfilled, (state, action) => {
+                console.log(action)
+                state.products = action.payload.data
             })
 
     },

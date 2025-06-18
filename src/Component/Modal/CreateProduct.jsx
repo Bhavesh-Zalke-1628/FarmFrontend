@@ -6,7 +6,8 @@ import {
     Button,
     InputAdornment,
 } from "@mui/material";
-import { Store, Factory, ListOrdered, DollarSign, FileText } from "lucide-react";
+import { BsPersonCircle } from 'react-icons/bs';
+import { Store, Factory, ListOrdered, DollarSign, FileText, Image } from "lucide-react";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -22,7 +23,29 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
         quantity: 0,
         price: 0,
         description: "",
+        productImg: ""
     });
+
+    const [previewImage, setPreviewImage] = useState("")
+
+    function getImage(event) {
+        event.preventDefault();
+        // getting the image
+        const uploadedImage = event.target.files[0];
+
+        if (uploadedImage) {
+            setFormData({
+                ...formData,
+                productImg: uploadedImage
+            });
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(uploadedImage);
+            fileReader.addEventListener("load", function () {
+                setPreviewImage(this.result);
+            })
+        }
+    }
+
 
     useEffect(() => {
         if (initialData) {
@@ -41,11 +64,13 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
                 price: 0,
                 description: "",
             });
+            setPreviewImage("")
         }
     }, [initialData, open]);
 
     const fields = [
         { label: "Product Name", name: "name", icon: <Store size={18} /> },
+        { label: "Product Image", name: "productImg", icon: <Image size={18} /> },
         { label: "Company", name: "company", icon: <Factory size={18} /> },
         { label: "Quantity", name: "quantity", type: "number", icon: <ListOrdered size={18} /> },
         { label: "Price", name: "price", type: "number", icon: <DollarSign size={18} /> },
@@ -99,6 +124,7 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
             } else {
                 Swal.fire("Error", initialData ? "Product update failed" : "Product creation failed", "error");
             }
+
         } catch (err) {
             toast.error(err?.message || "Something went wrong");
         }
@@ -119,8 +145,23 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
                             &times;
                         </button>
                     </div>
-
                     <form className="mt-5 space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                        <label htmlFor="image_uploads" className="cursor-pointer">
+                            {previewImage ? (
+                                <img className="w-24 h-24 rounded-full m-auto" src={previewImage} />
+                            ) : (
+                                <BsPersonCircle className='w-20 h-20 rounded-full m-auto text' />
+                                // <p>hello</p>
+                            )}
+                        </label>
+                        <input
+                            onChange={getImage}
+                            className="hidden"
+                            type="file"
+                            name="productImg"
+                            id="image_uploads"
+                            accept=".jpg, .jpeg, .png, .svg"
+                        />
                         {fields.map(({ label, name, type = "text", icon, multiline = false }) => (
                             <TextField
                                 key={name}

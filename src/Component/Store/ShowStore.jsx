@@ -7,7 +7,7 @@ import { Pencil, Trash2, Plus, Store, Package, Info } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
-import { changeStockStatus, deleteProduct, getAllProduct, updateProductQuantity } from '../../Redux/Slice/productSlice';
+import { changeStockStatus, deleteProduct, getAllProduct, getProductByStoreId, updateProductQuantity } from '../../Redux/Slice/productSlice';
 
 function ShowStore() {
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -73,8 +73,11 @@ function ShowStore() {
 
     const dispatch = useDispatch();
     const { data: userData } = useSelector((state) => state.auth);
-    const { store, loading: storeLoading } = useSelector((state) => state.store);
+    const { store, loading: storeLoading } = useSelector((state) => state?.store);
     const { products, loading: productsLoading } = useSelector((state) => state.products);
+
+    console.log(products)
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -83,7 +86,10 @@ function ShowStore() {
                 if (userData?._id && !store?._id) {
                     await dispatch(getStoreDetails(userData._id));
                 }
-                await dispatch(getAllProduct());
+                if (store?._id) {
+                    const res = await dispatch(getProductByStoreId(store?._id))
+                    console.log(res)
+                }
             } finally {
                 setIsLoading(false);
             }
