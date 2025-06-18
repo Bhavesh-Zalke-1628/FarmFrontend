@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, ShoppingCart } from 'lucide-react';
 
 const ProductCard = ({ product, onClick }) => {
+    console.log(product)
     return (
         <div
             className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"

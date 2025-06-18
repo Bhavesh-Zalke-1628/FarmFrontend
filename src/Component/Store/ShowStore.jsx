@@ -7,7 +7,7 @@ import { Pencil, Trash2, Plus, Store, Package, Info } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
-import { deleteProduct, getAllProduct } from '../../Redux/Slice/productSlice';
+import { changeStockStatus, deleteProduct, getAllProduct, updateProductQuantity } from '../../Redux/Slice/productSlice';
 
 function ShowStore() {
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -15,6 +15,61 @@ function ShowStore() {
     const [productId, setProductId] = useState(null);
     const [editProductData, setEditProductData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+
+
+    const toggleStock = async (status, productId) => {
+        console.log(status);
+
+        const res = await dispatch(changeStockStatus(productId));
+        console.log(res.payload)
+        const updatedStatus = res?.payload?.updatedProduct?.outOfStock;
+
+        // If product is now back in stock (previously out of stock)
+        if (!updatedStatus) {
+            const { value: quantity } = await Swal.fire({
+                title: "Stock Enabled",
+                text: "Enter the new quantity for this product:",
+                icon: "warning",
+                input: "number",
+                inputLabel: "Quantity",
+                inputPlaceholder: "Enter quantity",
+                inputAttributes: {
+                    min: 1
+                },
+                showCancelButton: true,
+                confirmButtonText: "Update",
+                cancelButtonText: "Cancel",
+                customClass: {
+                    popup: "custom-swal-popup",
+                    title: "custom-swal-title",
+                    confirmButton: "custom-swal-confirm"
+                },
+                preConfirm: (value) => {
+                    if (!value || isNaN(value) || Number(value) <= 0) {
+                        Swal.showValidationMessage("Please enter a valid quantity greater than 0");
+                        return false;
+                    }
+                    return value;
+                }
+            });
+
+            if (quantity) {
+                // Now dispatch updateQuantity action
+                console.log("hello")
+                const res = await dispatch(updateProductQuantity({ productId, quantity }));
+                console.log(res)
+                Swal.fire({
+                    icon: "success",
+                    title: "Quantity Updated",
+                    text: `Product quantity updated to ${quantity}`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        }
+    };
+
+
 
     const dispatch = useDispatch();
     const { data: userData } = useSelector((state) => state.auth);
@@ -205,7 +260,7 @@ function ShowStore() {
                             <div className="p-4">
                                 {products?.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {products.map((product) => (
+                                        {products.map((product, idx) => (
                                             <div
                                                 key={product._id}
                                                 className="relative group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
@@ -235,9 +290,14 @@ function ShowStore() {
                                                 <div className="p-4">
                                                     <div className="flex justify-between items-start">
                                                         <div>
-                                                            <h3 className="font-semibold text-gray-800 line-clamp-1">{product.name}</h3>
+                                                            <h3 className="font-semibold text-gray-800 line-clamp-1 capitalize">{product.name}</h3>
                                                             <p className="text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+                                                            <h3 className="font-semibold text-gray-800 line-clamp-1 capitalize">Qty : {product.quantity}</h3>
+
                                                         </div>
+
+
+
                                                         <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
                                                             {product.category || 'Uncategorized'}
                                                         </span>
@@ -248,6 +308,19 @@ function ShowStore() {
                                                         {product.originalPrice && (
                                                             <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                                                         )}
+                                                        <div className="flex items-center space-x-4">
+                                                            <p className="font-bold capitalize">Stock {!product?.outOfStock ? 'In' : 'Out'}</p>
+                                                            <button
+                                                                onClick={() => toggleStock(product?.outOfStock, product?._id)}
+                                                                className={`w-14 h-7 flex items-center rounded-full p-1 transition duration-300 ${!product?.outOfStock ? 'bg-green-500' : 'bg-red-500'
+                                                                    }`}
+                                                            >
+                                                                <div
+                                                                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${!product?.outOfStock ? 'translate-x-7' : 'translate-x-0'
+                                                                        }`}
+                                                                ></div>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
 

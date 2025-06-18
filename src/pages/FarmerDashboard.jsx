@@ -7,10 +7,11 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutAccount } from "../Redux/Slice/authSlice";
-import ProductManagementPage from "./ProductManagement";
+import ProductManagementPage from "./Product/ProductManagement";
 import Swal from "sweetalert2";
 import ShowStore from '../Component/Store/ShowStore'
 import DashboardOverview from "./DashboardOverview";
+import Profile from "./Profile";
 
 function FarmerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,9 +80,7 @@ function FarmerDashboard() {
 
     const ProductManagement = () => (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <Package size={24} /> My Products
-            </h1>
+
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <ProductManagementPage />
             </div>
@@ -116,7 +115,7 @@ function FarmerDashboard() {
                 <User size={24} /> My Profile
             </h1>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex flex-col md:flex-row gap-8">
+                {/* <div className="flex flex-col md:flex-row gap-8">
                     <div className="md:w-1/3">
                         <div className="flex flex-col items-center">
                             <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
@@ -164,7 +163,8 @@ function FarmerDashboard() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> */}
+                <Profile />
             </div>
         </div>
     );

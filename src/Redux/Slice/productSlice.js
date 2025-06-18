@@ -15,7 +15,6 @@ export const getAllProduct = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const res = await axiosInstance.get("/product/get-all-product");
-            console.log(res.data?.data)
             return res.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch products");
@@ -59,10 +58,10 @@ export const createProduct = createAsyncThunk(
 // Update Product
 export const updateProduct = createAsyncThunk(
     "product/update",
-    async ({ productId, updateData }, { rejectWithValue }) => {
+    async ({ productId, productData }, { rejectWithValue }) => {
         try {
             const res = await toast.promise(
-                axiosInstance.put(`/product/update-product/${productId}`, updateData),
+                axiosInstance.put(`/product/update-product/${productId}`, productData),
                 {
                     pending: "Updating product...",
                     success: "Product updated successfully ✅",
@@ -95,6 +94,42 @@ export const deleteProduct = createAsyncThunk(
         }
     }
 );
+
+// Change Stock Status
+export const changeStockStatus = createAsyncThunk(
+    "product/changeStockStatus",
+    async (productId, { rejectWithValue }) => {
+        try {
+            const res = await toast.promise(
+                axiosInstance.patch(`/product/change-stock-product/${productId}`),
+                {
+                    pending: "Updating stock status...",
+                    success: "Stock status updated",
+                    error: "Failed to update stock status ❌",
+                }
+            );
+            return { productId, updatedProduct: res.data.data || res.data };
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to update stock status");
+        }
+    }
+);
+
+
+export const updateProductQuantity = createAsyncThunk(
+    "products/updateProductQuantity",
+    async ({ productId, quantity }, { rejectWithValue }) => {
+        console.log(productId, quantity)
+        try {
+            const res = await axiosInstance.patch(`/product/change-product-quantity/${productId}`, { quantity });
+            console.log(res)
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || "Failed to update quantity");
+        }
+    }
+);
+
 
 const productSlice = createSlice({
     name: "product",
@@ -145,8 +180,9 @@ const productSlice = createSlice({
             })
             .addCase(createProduct.fulfilled, (state, action) => {
                 state.loading = false;
-                state.product = action.payload.data || action.payload;
-                state.products.unshift(action.payload.data || action.payload);
+                const newProduct = action.payload.data || action.payload;
+                state.product = newProduct;
+                state.products.unshift(newProduct);
             })
             .addCase(createProduct.rejected, (state, action) => {
                 state.loading = false;
@@ -160,9 +196,10 @@ const productSlice = createSlice({
             })
             .addCase(updateProduct.fulfilled, (state, action) => {
                 state.loading = false;
-                state.product = action.payload.data || action.payload;
-                state.products = state.products.map(product =>
-                    product._id === action.payload._id ? action.payload.data || action.payload : product
+                const updated = action.payload.data || action.payload;
+                state.product = updated;
+                state.products = state.products.map((p) =>
+                    p._id === updated._id ? updated : p
                 );
             })
             .addCase(updateProduct.rejected, (state, action) => {
@@ -177,14 +214,44 @@ const productSlice = createSlice({
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = state.products.filter(
-                    product => product._id !== action.meta.arg
-                );
+                const deletedId = action.meta.arg;
+                state.products = state.products.filter(p => p._id !== deletedId);
             })
             .addCase(deleteProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+
+            // ✅ Change Stock Status
+            .addCase(changeStockStatus.fulfilled, (state, action) => {
+                const { productId, updatedProduct } = action.payload;
+                state.products = state.products.map(p =>
+                    p._id === productId ? updatedProduct : p
+                );
+            })
+            .addCase(changeStockStatus.rejected, (state, action) => {
+                toast.error(action.payload);
+                state.error = action.payload;
+            })
+            // Update Product Quantity
+            .addCase(updateProductQuantity.pending, (state) => {
+                state.loading = true;
+                state.error = false;
+            })
+            .addCase(updateProductQuantity.fulfilled, (state, action) => {
+                state.loading = false;
+                console.log(action.payload)
+                const updated = action.payload.data
+                state.products = state.products.map((p) =>
+                    p._id === updated._id ? updated : p
+                );
+            })
+            .addCase(updateProductQuantity.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                toast.error(action.payload);
+            })
+
     },
 });
 

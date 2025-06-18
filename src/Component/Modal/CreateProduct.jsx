@@ -70,6 +70,7 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
             let result;
             if (initialData && initialData._id) {
                 // Edit mode
+                console.log(formData)
                 result = await dispatch(updateProduct({
                     productId: initialData._id,
                     productData: formData,

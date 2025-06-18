@@ -4,10 +4,10 @@ import {
     Plus, Loader, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import ProductCard from '../Component/ui/ProductCard';
-import Pagination from '../Component/ui/Pagination';
+import ProductCard from '../../Component/ui/ProductCard';
+import Pagination from '../../Component/ui/Pagination';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllProduct } from '../Redux/Slice/productSlice';
+import { getAllProduct } from '../../Redux/Slice/productSlice';
 
 const ProductManagementPage = () => {
     const navigate = useNavigate();
@@ -22,6 +22,8 @@ const ProductManagementPage = () => {
 
     const dispatch = useDispatch();
     const { products, loading, error } = useSelector((state) => state.products);
+    const { role } = useSelector(state => state?.auth)
+    console.log(role)
 
     // Extract unique categories from products
     const categories = ['All', ...new Set(products.map(product => product.category))];
@@ -190,13 +192,15 @@ const ProductManagementPage = () => {
                 <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-xl p-8 mb-8 text-white">
                     <h1 className="text-3xl font-bold mb-2">Product Management</h1>
                     <p className="text-lg mb-4">Manage your product inventory</p>
-                    <Link
-                        to="/products/new"
-                        className="inline-flex items-center px-4 py-2 bg-white text-green-700 rounded-lg font-medium hover:bg-gray-100"
-                    >
-                        <Plus size={18} className="mr-2" />
-                        Add New Product
-                    </Link>
+                    {role === "admin" &&
+                        <Link Link
+                            to="/products/new"
+                            className="inline-flex items-center px-4 py-2 bg-white text-green-700 rounded-lg font-medium hover:bg-gray-100"
+                        >
+                            <Plus size={18} className="mr-2" />
+                            Add New Product
+                        </Link>
+                    }
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
@@ -334,7 +338,7 @@ const ProductManagementPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
