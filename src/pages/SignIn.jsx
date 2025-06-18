@@ -2,227 +2,266 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginAccount, sendOtp, verifyOtp } from '../Redux/Slice/authSlice';
+import { FiSmartphone, FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
 
 function SignIn() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [isMobileSignIn, setIsMobileSignIn] = useState(false);
+    const [authMethod, setAuthMethod] = useState('password'); // 'password' or 'otp'
     const [otpSent, setOtpSent] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const [signInData, setSignInData] = useState({
-        email: '',
-        password: '',
+    const [errors, setErrors] = useState({});
+    const [formData, setFormData] = useState({
         mobileNumber: '',
-        otp: '',
+        password: '',
+        otp: ''
     });
 
-    // Handle Input Change
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setSignInData({ ...signInData, [name]: value });
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.mobileNumber) {
+            newErrors.mobileNumber = 'Mobile number is required';
+        } else if (!/^\d{10}$/.test(formData.mobileNumber)) {
+            newErrors.mobileNumber = 'Invalid mobile number';
+        }
+
+        if (authMethod === 'password' && !formData.password) {
+            newErrors.password = 'Password is required';
+        }
+
+        if (authMethod === 'otp' && otpSent && !formData.otp) {
+            newErrors.otp = 'OTP is required';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    // Email & Password Login
-    async function loginUser(event) {
-        event.preventDefault();
-        setLoading(true);
-        setError('');
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
 
-        try {
-            const res = await dispatch(loginAccount({ mobileNumber: signInData.mobileNumber, password: signInData.password }))
-            if (res.payload.success) {
-                navigate('/');
-            } else {
-                setError(res.message || 'Login failed. Please try again.');
-            }
-        } catch (err) {
-            setError(err.message || 'Something went wrong.');
-        } finally {
-            setLoading(false);
+        // Clear error when user types
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
         }
-    }
+    };
 
-    // Send OTP to Mobile
-    async function handleSendOtp(event) {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
         setLoading(true);
-        setError('');
+        setErrors({});
 
         try {
-            const res = await dispatch(sendOtp({ mobileNumber: signInData.mobileNumber })).unwrap();
+            let res;
+            if (authMethod === 'password') {
+                res = await dispatch(loginAccount({
+                    mobileNumber: formData.mobileNumber,
+                    password: formData.password
+                })).unwrap();
+            } else {
+                if (otpSent) {
+                    res = await dispatch(verifyOtp({
+                        mobileNumber: formData.mobileNumber,
+                        otp: formData.otp
+                    })).unwrap();
+                } else {
+                    res = await dispatch(sendOtp({
+                        mobileNumber: formData.mobileNumber
+                    })).unwrap();
+                    setOtpSent(true);
+                    return;
+                }
+            }
 
             if (res.success) {
-                setOtpSent(true);
+                navigate(res.redirectTo || '/profile');
             } else {
-                setError(res.message || 'Failed to send OTP.');
+                setErrors({ apiError: res.message || 'Authentication failed' });
             }
-        } catch (err) {
-            setError(err.message || 'Something went wrong.');
+        } catch (error) {
+            setErrors({ apiError: error.message || 'Something went wrong' });
         } finally {
             setLoading(false);
         }
-    }
+    };
 
-    // Verify OTP
-    async function handleVerifyOtp(event) {
-        event.preventDefault();
-        setLoading(true);
-        setError('');
-
-        try {
-            const res = await dispatch(verifyOtp({ mobileNumber: signInData.mobileNumber, otp: signInData.otp })).unwrap();
-
-            if (res.success) {
-                navigate('/dashboard');
-            } else {
-                setError(res.message || 'Invalid OTP. Try again.');
-            }
-        } catch (err) {
-            setError(err.message || 'Something went wrong.');
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    // Toggle between Email & Mobile Login
-    const handleToggle = () => {
-        setIsMobileSignIn(!isMobileSignIn);
-        setOtpSent(false); // Reset OTP state
-        setSignInData({
-            password: '',
-            mobileNumber: '',
-            otp: '',
-        });
+    const toggleAuthMethod = () => {
+        setAuthMethod(prev => prev === 'password' ? 'otp' : 'password');
+        setOtpSent(false);
+        setFormData(prev => ({ ...prev, password: '', otp: '' }));
+        setErrors({});
     };
 
     return (
-        <section className="bg-gray-50 dark:bg-gray-900">
-            <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <div className="w-full bg-white rounded-lg shadow dark:border sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-                    <div className="p-6 space-y-4 sm:p-8">
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                            {isMobileSignIn ? 'Sign in with OTP' : 'Sign in to your account'}
-                        </h1>
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Sign in to your account
+                </h2>
+                <p className="mt-2 text-center text-sm text-gray-600">
+                    Or{' '}
+                    <Link to="/signup" className="font-medium text-green-600 hover:text-green-500">
+                        create a new account
+                    </Link>
+                </p>
+            </div>
 
-                        <form className="space-y-4" onSubmit={isMobileSignIn ? (otpSent ? handleVerifyOtp : handleSendOtp) : loginUser}>
-                            {isMobileSignIn ? (
-                                <>
-                                    {/* Mobile Number */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Mobile Number
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="mobileNumber"
-                                            placeholder="Enter your mobile number"
-                                            className="bg-gray-50 border text-gray-900 rounded-lg p-2.5 w-full dark:bg-gray-700 dark:text-white"
-                                            value={signInData.mobileNumber}
-                                            onChange={handleChange}
-                                            maxLength="10"
-                                            required
-                                        />
-                                    </div>
+            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                    {errors.apiError && (
+                        <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm text-red-700">{errors.apiError}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                                    {/* OTP */}
-                                    {otpSent && (
-                                        <div>
-                                            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                OTP
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="otp"
-                                                placeholder="Enter OTP"
-                                                className="bg-gray-50 border text-gray-900 rounded-lg p-2.5 w-full dark:bg-gray-700 dark:text-white"
-                                                value={signInData.otp}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* OTP Buttons */}
-                                    <button
-                                        type="submit"
-                                        className="w-full text-white bg-blue-600 hover:bg-blue-700 rounded-lg p-2.5"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Processing...' : otpSent ? 'Verify OTP' : 'Send OTP'}
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Mobile Number
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            name="mobileNumber"
-                                            placeholder="99xxxxxxx"
-                                            className="bg-gray-50 border text-gray-900 rounded-lg p-2.5 w-full dark:bg-gray-700 dark:text-white"
-                                            value={signInData.mobileNumber}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Password */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Password
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            placeholder="••••••••"
-                                            className="bg-gray-50 border text-gray-900 rounded-lg p-2.5 w-full dark:bg-gray-700 dark:text-white"
-                                            value={signInData.password}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Sign In Button */}
-                                    <button
-                                        type="submit"
-                                        className="w-full text-white bg-blue-600 hover:bg-blue-700 rounded-lg p-2.5"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Signing In...' : 'Sign In'}
-                                    </button>
-                                </>
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        <div>
+                            <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700">
+                                Mobile Number
+                            </label>
+                            <div className="mt-1 relative rounded-md shadow-sm">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FiSmartphone className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="mobileNumber"
+                                    name="mobileNumber"
+                                    type="tel"
+                                    autoComplete="tel"
+                                    placeholder="9876543210"
+                                    className={`block w-full pl-10 pr-3 py-2 border ${errors.mobileNumber ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                                    value={formData.mobileNumber}
+                                    onChange={handleChange}
+                                    maxLength="10"
+                                />
+                            </div>
+                            {errors.mobileNumber && (
+                                <p className="mt-2 text-sm text-red-600">{errors.mobileNumber}</p>
                             )}
+                        </div>
 
-                            {/* Toggle Option */}
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {isMobileSignIn ? 'Back to ' : 'Sign in with '}
-                                <span
-                                    className="text-blue-600 cursor-pointer hover:underline"
-                                    onClick={handleToggle}
-                                >
-                                    {isMobileSignIn ? 'Email & Password' : 'Mobile OTP'}
+                        {authMethod === 'password' ? (
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                    Password
+                                </label>
+                                <div className="mt-1 relative rounded-md shadow-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <FiLock className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        autoComplete="current-password"
+                                        placeholder="••••••••"
+                                        className={`block w-full pl-10 pr-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                                {errors.password && (
+                                    <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+                                )}
+                                <div className="text-right mt-2">
+                                    <Link to="/forgot-password" className="text-sm font-medium text-green-600 hover:text-green-500">
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                            </div>
+                        ) : (
+                            otpSent && (
+                                <div>
+                                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                                        OTP
+                                    </label>
+                                    <div className="mt-1 relative rounded-md shadow-sm">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FiMail className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            id="otp"
+                                            name="otp"
+                                            type="text"
+                                            placeholder="Enter 6-digit OTP"
+                                            className={`block w-full pl-10 pr-3 py-2 border ${errors.otp ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                                            value={formData.otp}
+                                            onChange={handleChange}
+                                            maxLength="6"
+                                        />
+                                    </div>
+                                    {errors.otp && (
+                                        <p className="mt-2 text-sm text-red-600">{errors.otp}</p>
+                                    )}
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        OTP sent to +91 {formData.mobileNumber}
+                                    </p>
+                                </div>
+                            )
+                        )}
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            >
+                                {loading ? (
+                                    'Processing...'
+                                ) : (
+                                    <>
+                                        {authMethod === 'password' ? 'Sign in' : otpSent ? 'Verify OTP' : 'Send OTP'}
+                                        <FiArrowRight className="ml-2 h-5 w-5" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">
+                                    Or continue with
                                 </span>
-                            </p>
+                            </div>
+                        </div>
 
-                            {/* Signup Link */}
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Don't have an account?{' '}
-                                <Link to="/signup" className="font-medium text-blue-600 hover:underline dark:text-blue-500">
-                                    Sign up here
-                                </Link>
-                            </p>
-                        </form>
+                        <div className="mt-6 grid grid-cols-1 gap-3">
+                            <button
+                                onClick={toggleAuthMethod}
+                                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                                {authMethod === 'password' ? 'Sign in with OTP' : 'Sign in with Password'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
 

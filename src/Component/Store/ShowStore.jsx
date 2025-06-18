@@ -3,7 +3,7 @@ import CreateStoreModal from '../Modal/CreateStoreModel';
 import CreateProductModal from '../Modal/CreateProduct';
 import ViewProduct from '../Modal/ViewProduct';
 import { Button } from '@mui/material';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Store, Package, Info } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
@@ -13,26 +13,55 @@ function ShowStore() {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showCreateProduct, setShowCreateProduct] = useState(false);
     const [productId, setProductId] = useState(null);
-    const [editProductData, setEditProductData] = useState(null); // <-- For edit
+    const [editProductData, setEditProductData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const dispatch = useDispatch();
     const { data: userData } = useSelector((state) => state.auth);
-    const { store } = useSelector((state) => state.store);
+    const { store, loading: storeLoading } = useSelector((state) => state.store);
+    const { products, loading: productsLoading } = useSelector((state) => state.products);
 
     useEffect(() => {
-        if (userData?._id && !store?._id) {
-            dispatch(getStoreDetails(userData._id));
-        }
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                if (userData?._id && !store?._id) {
+                    await dispatch(getStoreDetails(userData._id));
+                }
+                await dispatch(getAllProduct());
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
     }, [userData?._id, store?._id, dispatch]);
 
-    // Payment prompt before creating store
     const handleCreateStore = () => {
         Swal.fire({
-            title: 'Pay ₹1000 to Create Store',
-            text: 'To create your store, a payment of ₹1000 is required. Proceed with the payment to complete the setup.',
+            title: 'Create Your Store',
+            html: `
+                <div class="text-left">
+                    <p class="mb-4">To create your store, a one-time payment of <span class="font-bold">₹1000</span> is required.</p>
+                    <ul class="list-disc pl-5 mb-4 space-y-1">
+                        <li>Custom store branding</li>
+                        <li>Unlimited products</li>
+                        <li>24/7 support</li>
+                    </ul>
+                </div>
+            `,
             icon: 'info',
             showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
             confirmButtonText: 'Proceed to Payment',
+            cancelButtonText: 'Not Now',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 1000);
+                });
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 setShowCreateForm(true);
@@ -40,137 +69,300 @@ function ShowStore() {
         });
     };
 
-    // Open create product modal for new product
     const openCreateProductModal = () => {
-        setEditProductData(null); // Clear any editing data
+        setEditProductData(null);
         setShowCreateProduct(true);
     };
 
-    // Open edit product modal with data
     const handleEditProduct = (e, product) => {
         e.stopPropagation();
         setEditProductData(product);
         setShowCreateProduct(true);
     };
 
-    // Placeholder for delete - you can implement with Swal + dispatch
     const handleDeleteProduct = (e, productId) => {
         e.stopPropagation();
         Swal.fire({
-            title: 'Delete Product?',
-            text: 'This action cannot be undone.',
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Delete',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!',
+            background: '#ffffff',
+            backdrop: `
+                rgba(0,0,0,0.5)
+                url("/images/nyan-cat.gif")
+                left top
+                no-repeat
+            `
         }).then((result) => {
             if (result.isConfirmed) {
                 dispatch(deleteProduct(productId))
-                dispatch(getAllProduct())
-                console.log('Delete product id:', productId);
+                    .unwrap()
+                    .then(() => {
+                        Swal.fire(
+                            'Deleted!',
+                            'Your product has been deleted.',
+                            'success'
+                        );
+                        dispatch(getAllProduct());
+                    })
+                    .catch(() => {
+                        Swal.fire(
+                            'Error!',
+                            'Failed to delete product.',
+                            'error'
+                        );
+                    });
             }
         });
     };
 
+    if (isLoading || storeLoading || productsLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+            </div>
+        );
+    }
+
     return (
-        <div className="w-full px-4 py-6">
+        <div className="w-full px-4 py-8 max-w-7xl mx-auto">
+            {/* Store Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                        <Store className="text-yellow-500" size={28} />
+                        {store?._id ? store.name : 'My Store'}
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                        {store?._id
+                            ? 'Manage your store and products'
+                            : 'Create your store to start selling'}
+                    </p>
+                </div>
+
+                {store?._id && (
+                    <button
+                        onClick={openCreateProductModal}
+                        className="mt-4 md:mt-0 flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+                    >
+                        <Plus size={18} />
+                        Add Product
+                    </button>
+                )}
+            </div>
+
             {store?._id ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Store Details */}
-                    <section className="bg-white shadow-md rounded-xl p-6">
-                        <h2 className="text-xl font-semibold mb-4">🏪 Store Details</h2>
-                        <div className="space-y-2 text-gray-700">
-                            <p>
-                                <strong>Name:</strong> {store.name}
-                            </p>
-                            <p>
-                                <strong>Email:</strong> {store.email}
-                            </p>
-                            <p>
-                                <strong>Contact:</strong> {store.contact}
-                            </p>
-                            <p>
-                                <strong>Address:</strong> {store.address}
-                            </p>
-                            <p className="capitalize">
-                                <strong>Owner:</strong> {store.owner?.fullName}
-                            </p>
-                        </div>
-                    </section>
-
-                    {/* Product Details */}
-                    <section className="bg-white shadow-md rounded-xl p-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold mb-2 sm:mb-0">📦 Product Details</h2>
-                            <button
-                                className="bg-yellow-400 px-4 py-2 rounded-lg shadow text-black font-semibold"
-                                onClick={openCreateProductModal}
-                            >
-                                Add Product +
-                            </button>
-                        </div>
-
-                        {store.products?.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {store.products.map(({ _id, image, name, description, price, category }, index) => (
-                                    <div
-                                        key={_id || index}
-                                        className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all ease-in-out duration-300 cursor-pointer p-4 group relative"
-                                        onClick={() => setProductId(_id)}
-                                    >
-                                        {/* Edit/Delete Icons on Hover - only for admin */}
-                                        {userData?.role === 'admin' && (
-                                            <div className="absolute top-2 right-2 hidden group-hover:flex gap-3 z-10 ">
-                                                <button
-                                                    onClick={(e) => handleEditProduct(e, { _id, image, name, description, price, category })}
-                                                    className="text-gray-500 hover:text-blue-600"
-                                                    title="Edit"
-                                                >
-                                                    <Pencil size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleDeleteProduct(e, _id)}
-                                                    className="text-gray-500 hover:text-red-600"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Product Info */}
-                                        <div className="flex flex-col gap-4">
-                                            {image && (
-                                                <img
-                                                    src={image}
-                                                    alt={name}
-                                                    className="w-full h-40 object-cover rounded-md border"
-                                                />
-                                            )}
-
-                                            <div className="flex flex-col gap-1">
-                                                <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-                                                <p className="text-gray-600 text-sm line-clamp-2">{description}</p>
-                                                <p className="text-blue-600 font-medium text-base mt-1">₹ {price}</p>
-                                                {category && <p className="text-xs text-gray-500">Category: {category}</p>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Store Information Card */}
+                    <div className="lg:col-span-1 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 p-4 text-white">
+                            <div className="flex items-center gap-3">
+                                <Store size={24} />
+                                <h2 className="text-xl font-semibold">Store Information</h2>
                             </div>
-                        ) : (
-                            <p className="text-gray-500 text-center">No products available.</p>
-                        )}
-                    </section>
+                        </div>
+                        <div className="p-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-500">Store Name</h3>
+                                    <p className="mt-1 text-gray-800">{store.name}</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-500">Contact Email</h3>
+                                    <p className="mt-1 text-gray-800">{store.email}</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-500">Phone Number</h3>
+                                    <p className="mt-1 text-gray-800">{store.contact || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-500">Address</h3>
+                                    <p className="mt-1 text-gray-800">{store.address || 'Not provided'}</p>
+                                </div>
+                            </div>
+                            <div className="mt-6 pt-4 border-t border-gray-100">
+                                <button className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">
+                                    Edit Store Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Products Section */}
+                    <div className="lg:col-span-2">
+                        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+                                <div className="flex items-center gap-3">
+                                    <Package size={24} />
+                                    <h2 className="text-xl font-semibold">Your Products</h2>
+                                </div>
+                            </div>
+
+                            <div className="p-4">
+                                {products?.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {products.map((product) => (
+                                            <div
+                                                key={product._id}
+                                                className="relative group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+                                            >
+                                                {/* Product Image */}
+                                                <div
+                                                    className="h-40 bg-gray-100 overflow-hidden relative cursor-pointer"
+                                                    onClick={() => setProductId(product._id)}
+                                                >
+                                                    {product.images?.[0] ? (
+                                                        <img
+                                                            src={product.images[0]}
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                            <Package size={48} className="opacity-30" />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                                                        <span className="text-white text-sm font-medium">Click to view details</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Product Info */}
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h3 className="font-semibold text-gray-800 line-clamp-1">{product.name}</h3>
+                                                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+                                                        </div>
+                                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                                            {product.category || 'Uncategorized'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="mt-3 flex items-center justify-between">
+                                                        <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
+                                                        {product.originalPrice && (
+                                                            <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <button
+                                                        onClick={(e) => handleEditProduct(e, product)}
+                                                        className="p-1.5 bg-white/90 hover:bg-white rounded-full shadow-md text-blue-600 hover:text-blue-800 transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDeleteProduct(e, product._id)}
+                                                        className="p-1.5 bg-white/90 hover:bg-white rounded-full shadow-md text-red-600 hover:text-red-800 transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <Package size={48} className="text-gray-300 mb-4" />
+                                        <h3 className="text-lg font-medium text-gray-500">No products yet</h3>
+                                        <p className="text-gray-400 mt-1 mb-4">Add your first product to get started</p>
+                                        <button
+                                            onClick={openCreateProductModal}
+                                            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors"
+                                        >
+                                            <Plus size={18} />
+                                            Add Product
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Stats Card */}
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 rounded-full">
+                                        <Package className="text-green-600" size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Total Products</p>
+                                        <p className="text-xl font-semibold">{products?.length || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-full">
+                                        <Info className="text-blue-600" size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Active Listings</p>
+                                        <p className="text-xl font-semibold">{products?.length || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-100 rounded-full">
+                                        <Store className="text-purple-600" size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Store Rating</p>
+                                        <p className="text-xl font-semibold">4.8 ★</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             ) : (
-                <div className="w-full flex justify-center mt-6">
-                    <Button
-                        className="bg-yellow-500 text-white"
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-lg border border-gray-100">
+                    <Store size={64} className="text-yellow-500 mb-6" />
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">You don't have a store yet</h2>
+                    <p className="text-gray-500 max-w-md text-center mb-8">
+                        Create your own store to start selling products online. Get your products in front of customers today!
+                    </p>
+                    <button
                         onClick={handleCreateStore}
-                        variant="contained"
+                        className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-3 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
                     >
-                        Create Store
-                    </Button>
+                        <Plus size={20} />
+                        Create Your Store
+                    </button>
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-2xl">
+                        <div className="text-center p-4">
+                            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Package className="text-blue-600" size={20} />
+                            </div>
+                            <h3 className="font-medium text-gray-800">Add Products</h3>
+                            <p className="text-sm text-gray-500 mt-1">Unlimited product listings</p>
+                        </div>
+                        <div className="text-center p-4">
+                            <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Store className="text-green-600" size={20} />
+                            </div>
+                            <h3 className="font-medium text-gray-800">Custom Branding</h3>
+                            <p className="text-sm text-gray-500 mt-1">Your logo and colors</p>
+                        </div>
+                        <div className="text-center p-4">
+                            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Info className="text-purple-600" size={20} />
+                            </div>
+                            <h3 className="font-medium text-gray-800">Analytics</h3>
+                            <p className="text-sm text-gray-500 mt-1">Track your sales</p>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -183,7 +375,7 @@ function ShowStore() {
                     setShowCreateProduct(false);
                     setEditProductData(null);
                 }}
-                initialData={editProductData} // Pass product data for editing or null for creating new
+                initialData={editProductData}
             />
             {productId && <ViewProduct productId={productId} onClose={() => setProductId(null)} />}
         </div>

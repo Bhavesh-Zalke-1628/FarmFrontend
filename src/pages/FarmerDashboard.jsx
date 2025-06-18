@@ -1,21 +1,28 @@
 import React, { useState } from "react";
 import {
     Menu, X, Home, Store, LogOut, Leaf, DollarSign, Package,
+    User, Settings, HelpCircle, BarChart2, ShoppingBag,
+    PlusCircle, ShoppingCart
 } from "lucide-react";
-import Layout from '../Layout/Layout';
-import ShowStore from "../Component/Store/ShowStore";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutAccount } from "../Redux/Slice/authSlice";
-import { useNavigate } from "react-router-dom";
+import ProductManagementPage from "./ProductManagement";
+import Swal from "sweetalert2";
+import ShowStore from '../Component/Store/ShowStore'
+import DashboardOverview from "./DashboardOverview";
 
 function FarmerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(() => {
         return localStorage.getItem("farmerActiveTab") || "dashboard";
     });
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { data: userData } = useSelector((state) => state.auth);
+    const cartItems = useSelector((state) => state.cart.items);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -23,106 +30,375 @@ function FarmerDashboard() {
         setSidebarOpen(false);
     };
 
+    const handleHomeNavigation = () => {
+        navigate("/");
+    };
+
+    const toggleProfileDropdown = () => {
+        setShowProfileDropdown(!showProfileDropdown);
+    };
+
     async function handleLogout() {
-        localStorage.removeItem("farmerActiveTab");
-        const res = await dispatch(logoutAccount());
-        if (res?.payload?.success) {
-            navigate("/");
+        const result = await Swal.fire({
+            title: 'Logout Confirmation',
+            text: "Are you sure you want to logout?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, logout!'
+        });
+
+        if (result.isConfirmed) {
+            localStorage.removeItem("farmerActiveTab");
+            const res = await dispatch(logoutAccount());
+            if (res?.payload?.success) {
+                navigate("/");
+            }
         }
     }
 
     const renderContent = () => {
         switch (activeTab) {
             case "dashboard":
-                return <h1 className="text-2xl font-bold">🌾 Welcome to Farmer Dashboard</h1>;
+                return <DashboardOverview />;
             case "store":
                 return <ShowStore />;
             case "product":
-                return <h1 className="text-2xl font-bold">📦 My Products</h1>;
+                return <ProductManagement />;
             case "crops":
-                return <h1 className="text-2xl font-bold">🌱 Manage Crops</h1>;
+                return <CropManagement />;
             case "earnings":
-                return <h1 className="text-2xl font-bold">💰 Earnings Report</h1>;
+                return <EarningsReport />;
+            case "profile":
+                return <ProfilePage />;
             default:
-                return <h1 className="text-2xl font-bold">Unknown Section</h1>;
+                return <DashboardOverview />;
         }
     };
 
-    return (
-        <Layout>
-            <div className="flex h-screen">
-                {/* Sidebar */}
-                <div className={`fixed inset-y-0 left-0 w-64 bg-green-800 text-white p-5 transform transition-transform duration-300 ease-in-out 
-                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 z-50`}>
-                    <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 md:hidden">
-                        <X size={24} />
-                    </button>
+    const ProductManagement = () => (
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Package size={24} /> My Products
+            </h1>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <ProductManagementPage />
+            </div>
+        </div>
+    );
 
-                    <h2 className="text-xl font-bold mb-6">🌾 Farmer Panel</h2>
+    const CropManagement = () => (
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Leaf size={24} /> Crop Management
+            </h1>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p className="text-gray-600">Crop management content goes here</p>
+            </div>
+        </div>
+    );
 
-                    <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-100px)]">
-                        <li
-                            onClick={() => handleTabChange("dashboard")}
-                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "dashboard" ? "text-yellow-300 font-semibold" : ""}`}
-                        >
-                            <Home size={20} /> Dashboard
-                        </li>
-                        <li
-                            onClick={() => handleTabChange("store")}
-                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "store" ? "text-yellow-300 font-semibold" : ""}`}
-                        >
-                            <Store size={20} /> My Store
-                        </li>
-                        <li
-                            onClick={() => handleTabChange("product")}
-                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "product" ? "text-yellow-300 font-semibold" : ""}`}
-                        >
-                            <Package size={20} /> Product
-                        </li>
-                        <li
-                            onClick={() => handleTabChange("crops")}
-                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "crops" ? "text-yellow-300 font-semibold" : ""}`}
-                        >
-                            <Leaf size={20} /> Crops
-                        </li>
-                        <li
-                            onClick={() => handleTabChange("earnings")}
-                            className={`flex items-center gap-2 cursor-pointer hover:text-yellow-300 ${activeTab === "earnings" ? "text-yellow-300 font-semibold" : ""}`}
-                        >
-                            <DollarSign size={20} /> Earnings
-                        </li>
-                        <li
-                            onClick={() => {
-                                handleLogout();
-                                setSidebarOpen(false);
-                            }}
-                            className="flex items-center gap-2 cursor-pointer hover:text-red-300"
-                        >
-                            <LogOut size={20} /> Logout
-                        </li>
-                    </ul>
+    const EarningsReport = () => (
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <DollarSign size={24} /> Earnings Report
+            </h1>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p className="text-gray-600">Earnings report content goes here</p>
+            </div>
+        </div>
+    );
+
+    const ProfilePage = () => (
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <User size={24} /> My Profile
+            </h1>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex flex-col md:flex-row gap-8">
+                    <div className="md:w-1/3">
+                        <div className="flex flex-col items-center">
+                            <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
+                                <User size={48} className="text-gray-400" />
+                            </div>
+                            <h2 className="text-xl font-bold">{userData?.fullName || "User"}</h2>
+                            <p className="text-gray-500">{userData?.email || "user@example.com"}</p>
+                        </div>
+                    </div>
+                    <div className="md:w-2/3">
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="font-medium text-gray-700">Personal Information</h3>
+                                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm text-gray-500">Full Name</label>
+                                        <p className="mt-1">{userData?.fullName || "Not provided"}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-500">Email</label>
+                                        <p className="mt-1">{userData?.email || "Not provided"}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-500">Phone</label>
+                                        <p className="mt-1">{userData?.mobileNumber || "Not provided"}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-500">Account Type</label>
+                                        <p className="mt-1 capitalize">{userData?.role || "farmer"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="font-medium text-gray-700">Farm Information</h3>
+                                <div className="mt-2 space-y-2">
+                                    <p className="text-gray-600">Farm Name: {userData?.farmName || "Not provided"}</p>
+                                    <p className="text-gray-600">Location: {userData?.location || "Not provided"}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => { }} // Add edit functionality
+                                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                            >
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    );
 
-                {/* Mobile Sidebar Overlay */}
-                {sidebarOpen && (
-                    <div className="fixed inset-0 bg-black opacity-50 md:hidden" onClick={() => setSidebarOpen(false)} />
-                )}
+    const StatCard = ({ icon, title, value, change, color }) => {
+        const colorClasses = {
+            blue: 'bg-blue-50 text-blue-600',
+            green: 'bg-green-50 text-green-600',
+            purple: 'bg-purple-50 text-purple-600',
+            orange: 'bg-orange-50 text-orange-600',
+        };
 
-                {/* Main Content */}
-                <div className="flex-1 flex flex-col overflow-y-auto">
-                    {/* Mobile Nav */}
-                    <div className="p-4 bg-green-100 shadow md:hidden">
-                        <button className="p-2 bg-green-700 text-white rounded-md" onClick={() => setSidebarOpen(true)}>
-                            <Menu size={24} />
+        return (
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between">
+                    <div className={`p-3 rounded-full ${colorClasses[color]}`}>
+                        {icon}
+                    </div>
+                </div>
+                <h3 className="text-gray-500 mt-3">{title}</h3>
+                <p className="text-2xl font-bold mt-1">{value}</p>
+                <p className="text-sm text-gray-500 mt-2">{change}</p>
+            </div>
+        );
+    };
+
+    return (
+        <div className="flex h-screen bg-gray-50">
+            {/* Sidebar */}
+            <div className={`fixed inset-y-0 left-0 w-64 bg-green-700 text-white p-5 transform transition-all duration-300 ease-in-out 
+                    ${sidebarOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"} md:relative md:translate-x-0 z-50`}>
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            <span className="bg-white text-green-700 p-1 rounded-full">
+                                <Leaf size={20} />
+                            </span>
+                            Farmer Panel
+                        </h2>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="p-1 hover:bg-green-600 rounded-md md:hidden"
+                        >
+                            <X size={20} />
                         </button>
                     </div>
 
-                    {/* Content Area */}
-                    <div className="p-6">{renderContent()}</div>
+                    <div className="flex-1 overflow-y-auto">
+                        <ul className="space-y-2">
+                            <NavItem
+                                icon={<Home size={18} />}
+                                label="Home"
+                                onClick={handleHomeNavigation}
+                            />
+                            <NavItem
+                                icon={<Home size={18} />}
+                                label="Dashboard"
+                                active={activeTab === "dashboard"}
+                                onClick={() => handleTabChange("dashboard")}
+                            />
+                            <NavItem
+                                icon={<Store size={18} />}
+                                label="My Store"
+                                active={activeTab === "store"}
+                                onClick={() => handleTabChange("store")}
+                            />
+                            <NavItem
+                                icon={<Package size={18} />}
+                                label="Products"
+                                active={activeTab === "product"}
+                                onClick={() => handleTabChange("product")}
+                            />
+                            <NavItem
+                                icon={<Leaf size={18} />}
+                                label="Crops"
+                                active={activeTab === "crops"}
+                                onClick={() => handleTabChange("crops")}
+                            />
+                            <NavItem
+                                icon={<DollarSign size={18} />}
+                                label="Earnings"
+                                active={activeTab === "earnings"}
+                                onClick={() => handleTabChange("earnings")}
+                            />
+                        </ul>
+                    </div>
+
+                    <div className="pt-4 border-t border-green-600">
+                        <ul className="space-y-2">
+                            <NavItem
+                                icon={<User size={18} />}
+                                label="Profile"
+                                active={activeTab === "profile"}
+                                onClick={() => handleTabChange("profile")}
+                            />
+                            <NavItem
+                                icon={<Settings size={18} />}
+                                label="Settings"
+                                onClick={() => { }}
+                            />
+                            <NavItem
+                                icon={<HelpCircle size={18} />}
+                                label="Help"
+                                onClick={() => { }}
+                            />
+                            <NavItem
+                                icon={<LogOut size={18} />}
+                                label="Logout"
+                                onClick={handleLogout}
+                                danger
+                            />
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </Layout>
+
+            {/* Mobile Sidebar Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 md:hidden z-40"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Top Navigation Bar */}
+                <div className="p-4 bg-white border-b flex items-center justify-between">
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="p-2 bg-green-700 text-white rounded-md md:hidden"
+                        onClick={() => setSidebarOpen(true)}
+                    >
+                        <Menu size={20} />
+                    </button>
+
+                    {/* Home Button */}
+                    <button
+                        onClick={handleHomeNavigation}
+                        className="hidden md:flex items-center gap-2 text-gray-700 hover:text-green-600 transition-colors"
+                    >
+                        <Home size={20} />
+                        <span>Home</span>
+                    </button>
+
+                    {/* User Profile and Cart */}
+                    <div className="flex items-center gap-4">
+                        {/* Cart with Badge */}
+                        <div className="relative">
+                            <button
+                                onClick={() => navigate("/cart")}
+                                className="p-2 text-gray-700 hover:text-green-600 transition-colors relative"
+                            >
+                                <ShoppingCart size={20} />
+                                {cartItems.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {cartItems.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Profile Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={toggleProfileDropdown}
+                                className="flex items-center gap-2 text-gray-700 hover:text-green-600 transition-colors"
+                            >
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700">
+                                    <User size={16} />
+                                </div>
+                                <span className="hidden md:inline">{userData?.fullName || "User"}</span>
+                            </button>
+
+                            {showProfileDropdown && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+                                    <button
+                                        onClick={() => {
+                                            handleTabChange("profile");
+                                            setShowProfileDropdown(false);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        View Profile
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            navigate("/settings");
+                                            setShowProfileDropdown(false);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        Settings
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    {renderContent()}
+                </div>
+            </div>
+        </div>
     );
 }
+
+const NavItem = ({ icon, label, active = false, danger = false, onClick }) => {
+    return (
+        <li>
+            <button
+                onClick={onClick}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                    ${active ? 'bg-green-600 text-white font-medium' : 'hover:bg-green-600/20'}
+                    ${danger ? 'text-red-300 hover:text-red-200' : ''}`}
+            >
+                <span className={`${active ? 'text-white' : ''} ${danger ? 'text-red-300' : 'text-green-200'}`}>
+                    {icon}
+                </span>
+                <span>{label}</span>
+                {active && (
+                    <span className="ml-auto w-2 h-2 bg-yellow-400 rounded-full"></span>
+                )}
+            </button>
+        </li>
+    );
+};
 
 export default FarmerDashboard;
