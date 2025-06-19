@@ -47,18 +47,17 @@ export const getProductByStoreId = createAsyncThunk(
         }
     }
 );
-
 // Create Product
 export const createProduct = createAsyncThunk(
     "product/create",
-    async ({ storeId, ...productData }, { rejectWithValue }) => {
+    async ({ storeId, productData }, { rejectWithValue }) => {
         try {
-
-console.log(productData)
-
+            console.log("🔼 Creating product:", productData);
             const res = await toast.promise(
-                axiosInstance.post(`/product/create-product/${storeId}`, productData),
-                {
+                axiosInstance.post(`/product/create-product/${storeId}`, productData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }),
+                {   
                     pending: "Creating product...",
                     success: "Product created successfully 🎉",
                     error: "Failed to create product 😞",
@@ -76,8 +75,11 @@ export const updateProduct = createAsyncThunk(
     "product/update",
     async ({ productId, productData }, { rejectWithValue }) => {
         try {
+            console.log("✏️ Updating product:", productData);
             const res = await toast.promise(
-                axiosInstance.put(`/product/update-product/${productId}`, productData),
+                axiosInstance.put(`/product/update-product/${productId}`, productData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }),
                 {
                     pending: "Updating product...",
                     success: "Product updated successfully ✅",
@@ -90,6 +92,7 @@ export const updateProduct = createAsyncThunk(
         }
     }
 );
+
 
 // Delete Product
 export const deleteProduct = createAsyncThunk(

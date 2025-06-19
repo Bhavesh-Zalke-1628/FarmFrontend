@@ -55,6 +55,26 @@ export const createStore = createAsyncThunk(
     }
 );
 
+export const updateStore = createAsyncThunk(
+    "store/updateStore",
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            console.log(id, data)
+            const res = await toast.promise(
+                axiosInstance.put(`/store/update-store/${id}`, data),
+                {
+                    pending: "Creating store...",
+                    success: "Store created successfully 🎉",
+                    error: "Failed to create store ❌",
+                }
+            );
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Server Error");
+        }
+    }
+);
+
 const storeSlice = createSlice({
     name: "store",
     initialState,
@@ -88,7 +108,13 @@ const storeSlice = createSlice({
             })
             .addCase(createStore.rejected, (state) => {
                 state.isLoading = false;
-            });
+            })
+
+            // update 
+            .addCase(updateStore.fulfilled, (state, action) => {
+                console.log(action.payload)
+                state.store = action.payload.data
+            })
     },
 });
 

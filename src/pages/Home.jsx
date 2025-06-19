@@ -114,7 +114,7 @@ function Home() {
                         products.slice(0, 8).map((product) => (
                             <div
                                 key={product._id}
-                                className="relative border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white transition-transform hover:-translate-y-2 hover:shadow-lg group"
+                                className="relative border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white transition-transform hover:-translate-y-2 hover:shadow-lg group cursor-pointer"
                                 onClick={() => handleProductClick(product._id)}
                             >
                                 {/* Wishlist Icon */}
@@ -134,9 +134,9 @@ function Home() {
 
                                 {/* Product Image */}
                                 <div className="relative h-52 bg-gray-100 flex items-center justify-center overflow-hidden">
-                                    {product.images?.[0] ? (
+                                    {product?.img ? (
                                         <img
-                                            src={product.images[0]}
+                                            src={product?.img?.secure_url}
                                             alt={product.name}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
@@ -177,39 +177,37 @@ function Home() {
 
                                 {/* Product Info */}
                                 <div className="p-4 flex flex-col justify-between h-52">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-800 truncate">{product.name}</h3>
-                                        <p className="text-gray-500 text-sm line-clamp-2 mt-1">{product.description}</p>
-                                    </div>
 
-                                    <div className="mt-3 space-y-1">
-                                        {/* Price */}
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-green-600 font-bold text-lg">₹{product.price}</span>
-                                            {product.originalPrice && (
-                                                <span className="text-gray-400 line-through text-sm">
-                                                    ₹{product.originalPrice}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Quantity */}
-                                        <div className="text-sm">
-                                            Quantity:{" "}
-                                            <span
-                                                className={`font-semibold ${product.quantity < 10 ? "text-red-600" : "text-gray-700"
-                                                    }`}
-                                            >
-                                                {product.quantity} {product.quantity < 10 && "🧯"}
+                                    <h3 className="text-lg font-semibold text-gray-800 truncate">{product.name}</h3>
+                                    {/* <p className="text-gray-500 text-sm line-clamp-2 mt-1">{product.description}</p> */}
+                                    
+                                    {/* Price */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-green-600 font-bold text-lg">₹{product.price}</span>
+                                        {product.originalPrice && (
+                                            <span className="text-gray-400 line-through text-sm">
+                                                ₹{product.originalPrice}
                                             </span>
-                                        </div>
-
-                                        {/* Rating (static or from product.rating) */}
-                                        <div className="flex items-center gap-1 text-yellow-400 text-sm">
-                                            {renderStars(product.rating || 4.5)}
-                                            <span className="text-gray-500 text-xs ml-1">({product.rating || "4.5"})</span>
-                                        </div>
+                                        )}
                                     </div>
+
+                                    {/* Quantity */}
+                                    <div className="text-sm">
+                                        Quantity:{" "}
+                                        <span
+                                            className={`font-semibold ${product.quantity < 10 ? "text-red-600" : "text-gray-700"
+                                                }`}
+                                        >
+                                            {product.quantity} {product.quantity < 10 && "🧯"}
+                                        </span>
+                                    </div>
+
+                                    {/* Rating (static or from product.rating) */}
+                                    <div className="flex items-center gap-1 text-yellow-400 text-sm">
+                                        {renderStars(product.rating || 4.5)}
+                                        <span className="text-gray-500 text-xs ml-1">({product.rating || "4.5"})</span>
+                                    </div>
+
                                 </div>
                             </div>
                         ))

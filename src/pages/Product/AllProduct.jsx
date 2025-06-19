@@ -86,9 +86,9 @@ function AllProduct() {
                                     onClick={() => handleProductClick(product)}
                                 >
                                     <div className="h-48 overflow-hidden bg-gray-100 flex justify-center items-center">
-                                        {product.images?.[0] ? (
+                                        {product?.img ? (
                                             <img
-                                                src={product.images[0]}
+                                                src={product?.img?.secure_url}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover transform hover:scale-105 transition duration-300"
                                             />

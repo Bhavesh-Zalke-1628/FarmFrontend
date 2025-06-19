@@ -1,6 +1,9 @@
 import React from 'react';
 
 function ProductModal({ product, onClose }) {
+
+    console.log(product)
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-lg shadow-xl w-[90%] max-w-xl p-6 relative">
@@ -13,9 +16,9 @@ function ProductModal({ product, onClose }) {
 
                 <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-shrink-0 w-full md:w-1/2 h-60 bg-gray-100 flex items-center justify-center">
-                        {product.images?.[0] ? (
+                        {product.img ? (
                             <img
-                                src={product.images[0]}
+                                src={product?.img?.secure_url}
                                 alt={product.name}
                                 className="w-full h-full object-cover rounded"
                             />
