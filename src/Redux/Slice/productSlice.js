@@ -39,7 +39,6 @@ export const getProductByStoreId = createAsyncThunk(
     "product/getstoreById",
     async (storeId, { rejectWithValue }) => {
         try {
-            console.log(storeId)
             const res = await axiosInstance.get(`/product/get-store-product/${storeId}`);
             return res.data;
         } catch (error) {
@@ -52,7 +51,6 @@ export const createProduct = createAsyncThunk(
     "product/create",
     async ({ storeId, productData }, { rejectWithValue }) => {
         try {
-            console.log("🔼 Creating product:", productData);
             const res = await toast.promise(
                 axiosInstance.post(`/product/create-product/${storeId}`, productData, {
                     headers: { "Content-Type": "multipart/form-data" },
@@ -75,7 +73,6 @@ export const updateProduct = createAsyncThunk(
     "product/update",
     async ({ productId, productData }, { rejectWithValue }) => {
         try {
-            console.log("✏️ Updating product:", productData);
             const res = await toast.promise(
                 axiosInstance.put(`/product/update-product/${productId}`, productData, {
                     headers: { "Content-Type": "multipart/form-data" },
@@ -138,10 +135,8 @@ export const changeStockStatus = createAsyncThunk(
 export const updateProductQuantity = createAsyncThunk(
     "products/updateProductQuantity",
     async ({ productId, quantity }, { rejectWithValue }) => {
-        console.log(productId, quantity)
         try {
             const res = await axiosInstance.patch(`/product/change-product-quantity/${productId}`, { quantity });
-            console.log(res)
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to update quantity");
@@ -259,7 +254,6 @@ const productSlice = createSlice({
             })
             .addCase(updateProductQuantity.fulfilled, (state, action) => {
                 state.loading = false;
-                console.log(action.payload)
                 const updated = action.payload.data
                 state.products = state.products.map((p) =>
                     p._id === updated._id ? updated : p
@@ -272,7 +266,6 @@ const productSlice = createSlice({
             })
 
             .addCase(getProductByStoreId.fulfilled, (state, action) => {
-                console.log(action)
                 state.products = action.payload.data
             })
 

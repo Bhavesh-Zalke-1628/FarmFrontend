@@ -50,7 +50,6 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
 
     useEffect(() => {
         if (initialData) {
-            console.log(initialData?.offerPercentage)
             setFormData({
                 name: initialData.name || "",
                 company: initialData.company || "",
@@ -95,77 +94,6 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
     };
 
 
-
-    // const handleSubmit = async () => {
-    //     if (!formData.name || !formData.company || !formData.description) {
-    //         toast.error("Please fill in all required fields");
-    //         return;
-    //     }
-
-    //     const payload = new FormData();
-
-    //     payload.append("name", formData.name);
-    //     payload.append("company", formData.company);
-    //     payload.append("quantity", formData.quantity);
-    //     payload.append("price", formData.price);
-    //     payload.append("description", formData.description);
-
-    //     // Only append image if it's a File object (not already a URL)
-    //     if (formData.productImg instanceof File) {
-    //         payload.append("productImg", formData.productImg);
-    //     }
-
-    //     try {
-    //         let result;
-
-    //         if (initialData && initialData._id) {
-    //             console.log("📤 Sending Update Payload:");
-    //             for (let [key, val] of payload.entries()) {
-    //                 console.log(`${key}:`, val);
-    //             }
-
-    //             result = await dispatch(updateProduct({
-    //                 productId: initialData._id,
-    //                 productData: payload
-    //             })).unwrap();
-
-    //             if (result) {
-    //                 dispatch(getProductByStoreId(storeId));
-    //             }
-
-    //         } else {
-    //             console.log("📤 Sending Create Payload:");
-    //             for (let [key, val] of payload.entries()) {
-    //                 console.log(`${key}:`, val);
-    //             }
-
-    //             result = await dispatch(createProduct({
-    //                 storeId,
-    //                 productData: payload
-    //             })).unwrap();
-
-    //             if (result) {
-    //                 dispatch(getProductByStoreId(storeId));
-    //             }
-    //         }
-
-    //         if (result?.data?._id) {
-    //             Swal.fire(
-    //                 "Success",
-    //                 initialData ? "Product updated successfully" : "Product created successfully",
-    //                 "success"
-    //             );
-    //             handleClose();
-    //         } else {
-    //             Swal.fire("Error", initialData ? "Product update failed" : "Product creation failed", "error");
-    //         }
-
-    //     } catch (err) {
-    //         toast.error(err?.message || "Something went wrong");
-    //     }
-    // };
-
-
     const handleSubmit = async () => {
         if (!formData.name || !formData.company || !formData.description) {
             toast.error("Please fill in all required fields");
@@ -190,22 +118,12 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
             let result;
 
             if (initialData && initialData._id) {
-                console.log("📤 Sending Update Payload:");
-                for (let [key, val] of payload.entries()) {
-                    console.log(`${key}:`, val);
-                }
-
                 result = await dispatch(updateProduct({
                     productId: initialData._id,
                     productData: payload
                 })).unwrap();
 
             } else {
-                console.log("📤 Sending Create Payload:");
-                for (let [key, val] of payload.entries()) {
-                    console.log(`${key}:`, val);
-                }
-
                 result = await dispatch(createProduct({
                     storeId,
                     productData: payload
@@ -299,9 +217,7 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
                             {/* Right: Form Fields */}
                             <div className="md:w-1/2 w-full space-y-4">
                                 {fields.map(({ label, name, type = "text", icon, multiline = false }) => (
-                                    <>{
-                                        console.log(name)
-                                    }
+                                    <>
                                         <TextField
                                             key={name}
                                             fullWidth

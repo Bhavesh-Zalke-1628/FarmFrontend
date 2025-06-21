@@ -7,6 +7,7 @@ const initialState = {
     isLoggedIn: localStorage.getItem("isLoggedIn") === "true",
     role: localStorage.getItem("role") || "",
     data: JSON.parse(localStorage.getItem("data")) || {},
+    users: []
 };
 
 // ✅ Create Account
@@ -20,6 +21,19 @@ export const createAccount = createAsyncThunk("/signup", async (data, { rejectWi
                 error: "Failed to create user 😞",
             }
         );
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || "Something went wrong");
+    }
+});
+
+
+// ✅ Getting all user
+export const getAllUsers = createAsyncThunk("/all-users", async (_, { rejectWithValue }) => {
+    try {
+        console.log("hello")
+        const res = await axiosInstance.get("/users/get-all-users")
+        console.log(res.data)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Something went wrong");
@@ -162,7 +176,13 @@ const authSlice = createSlice({
             .addCase(updateProfile.fulfilled, (state, action) => {
                 state.data = action.payload.data || {};
                 localStorage.setItem("data", JSON.stringify(action.payload.data));
-            });
+            })
+
+            // gettting all users
+            .addCase(getAllUsers.fulfilled, (state, action) => {
+                console.log(action.payload)
+                state.users = action.payload.data || []
+            })
     },
 });
 

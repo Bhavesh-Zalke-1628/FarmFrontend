@@ -1,23 +1,60 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import {
     Package, Leaf, DollarSign, ShoppingBag,
     BarChart2, PlusCircle, Clock, CheckCircle,
-    AlertCircle, ArrowUp, ArrowDown
+    AlertCircle, ArrowUp, ArrowDown, User, Users
 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { getAllUsers } from '../Redux/Slice/authSlice';
 
-const DashboardOverview = ({ userData }) => {
-    // Sample data - replace with actual data from your API
-    const stats = [
-        { icon: <Package size={24} />, title: "Total Products", value: "24", change: "+3 this week", trend: "up", color: "blue" },
+const DashboardOverview = () => {
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const { role, data: userData, users } = useSelector(state => state?.auth)
+    console.log(users)
+
+    const isAdmin = role === "admin";
+    const isFarmer = role === "farmer";
+
+
+    useEffect(() => {
+        const res = dispatch(getAllUsers())
+        console.log(res)
+    }, [dispatch])
+    const stats = isAdmin ? [
+        { icon: <Users size={24} />, title: "Total Farmers", value: "153", change: "+12 new", trend: "up", color: "blue" },
+        { icon: <ShoppingBag size={24} />, title: "All Orders", value: "112", change: "+18 this week", trend: "up", color: "purple" },
+        { icon: <DollarSign size={24} />, title: "Platform Revenue", value: "₹2,15,600", change: "+25%", trend: "up", color: "green" },
+        { icon: <Leaf size={24} />, title: "Products Listed", value: "320", change: "4 new today", trend: "neutral", color: "orange" },
+    ] : [
+        { icon: <Package size={24} />, title: "My Products", value: "24", change: "+3 this week", trend: "up", color: "blue" },
         { icon: <Leaf size={24} />, title: "Active Crops", value: "5", change: "2 ready for harvest", trend: "neutral", color: "green" },
-        { icon: <DollarSign size={24} />, title: "This Month Earnings", value: "₹12,450", change: "+15% from last month", trend: "up", color: "purple" },
-        { icon: <ShoppingBag size={24} />, title: "Pending Orders", value: "7", change: "3 new today", trend: "down", color: "orange" }
+        { icon: <DollarSign size={24} />, title: "This Month Earnings", value: "₹12,450", change: "+15%", trend: "up", color: "purple" },
+        { icon: <ShoppingBag size={24} />, title: "My Orders", value: "7", change: "3 new today", trend: "down", color: "orange" }
     ];
 
-    const recentActivities = [
+    const recentActivities = isAdmin ? [
+        { id: 1, icon: <CheckCircle size={16} className="text-green-500" />, title: "New User Registered", description: "Farmer Ramesh joined", time: "2 hrs ago" },
+        { id: 2, icon: <AlertCircle size={16} className="text-red-500" />, title: "Order Failed", description: "Order #4567 payment error", time: "5 hrs ago" },
+        { id: 3, icon: <Package size={16} className="text-blue-500" />, title: "Product Approved", description: "Organic Carrots", time: "Yesterday" }
+    ] : [
         { id: 1, icon: <CheckCircle size={16} className="text-green-500" />, title: "Order Completed", description: "Order #1234 for 5kg Tomatoes", time: "2 hours ago" },
         { id: 2, icon: <AlertCircle size={16} className="text-yellow-500" />, title: "Crop Alert", description: "Wheat needs watering", time: "5 hours ago" },
         { id: 3, icon: <Package size={16} className="text-blue-500" />, title: "New Product Added", description: "Organic Potatoes", time: "Yesterday" }
+    ];
+
+    const quickActions = isAdmin ? [
+        { icon: <Users size={24} />, label: "Manage Users", bg: "bg-blue-50", color: "text-blue-600" },
+        { icon: <ShoppingBag size={24} />, label: "View Orders", bg: "bg-purple-50", color: "text-purple-600" },
+        { icon: <Leaf size={24} />, label: "Review Products", bg: "bg-green-50", color: "text-green-600" },
+        { icon: <DollarSign size={24} />, label: "Transactions", bg: "bg-yellow-50", color: "text-yellow-600" },
+    ] : [
+        { icon: <PlusCircle size={24} />, label: "Add Product", bg: "bg-green-50", color: "text-green-600" },
+        { icon: <Leaf size={24} />, label: "Add Crop", bg: "bg-blue-50", color: "text-blue-600" },
+        { icon: <Package size={24} />, label: "Inventory", bg: "bg-purple-50", color: "text-purple-600" },
+        { icon: <DollarSign size={24} />, label: "Add Sale", bg: "bg-yellow-50", color: "text-yellow-600" },
     ];
 
     return (
@@ -25,8 +62,12 @@ const DashboardOverview = ({ userData }) => {
             {/* Welcome Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">🌾 Welcome back, {userData?.fullName || "Farmer"}!</h1>
-                    <p className="text-gray-600">Here's what's happening with your farm today</p>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        {isAdmin ? '👋 Welcome Admin,' : '🌾 Welcome back,'} {userData?.fullName || "User"}!
+                    </h1>
+                    <p className="text-gray-600">
+                        {isAdmin ? "Here's the latest platform stats" : "Here's what's happening with your farm today"}
+                    </p>
                 </div>
                 <div className="text-sm bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full">
                     Last login: {new Date().toLocaleString()}
@@ -63,7 +104,7 @@ const DashboardOverview = ({ userData }) => {
                 ))}
             </div>
 
-            {/* Main Content Area */}
+            {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recent Activity */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -97,62 +138,15 @@ const DashboardOverview = ({ userData }) => {
                         <BarChart2 size={20} /> Quick Actions
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
-                        <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg flex flex-col items-center justify-center transition-colors">
-                            <PlusCircle size={24} className="text-green-600 mb-2" />
-                            <span>Add Product</span>
-                        </button>
-                        <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg flex flex-col items-center justify-center transition-colors">
-                            <Leaf size={24} className="text-blue-600 mb-2" />
-                            <span>Add Crop</span>
-                        </button>
-                        <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg flex flex-col items-center justify-center transition-colors">
-                            <Package size={24} className="text-purple-600 mb-2" />
-                            <span>Inventory</span>
-                        </button>
-                        <button className="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg flex flex-col items-center justify-center transition-colors">
-                            <DollarSign size={24} className="text-yellow-600 mb-2" />
-                            <span>Add Sale</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Additional Sections */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Upcoming Tasks */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="font-semibold text-lg mb-4">Upcoming Tasks</h3>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                            <div className="flex items-center">
-                                <input type="checkbox" className="mr-3" />
-                                <span>Water the wheat field</span>
-                            </div>
-                            <span className="text-sm text-gray-500">Tomorrow AM</span>
-                        </div>
-                        <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                            <div className="flex items-center">
-                                <input type="checkbox" className="mr-3" />
-                                <span>Harvest tomatoes</span>
-                            </div>
-                            <span className="text-sm text-gray-500">In 2 days</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Weather Widget */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="font-semibold text-lg mb-4">Weather Forecast</h3>
-                    <div className="flex items-center justify-between">
-                        <div className="text-4xl">☀️</div>
-                        <div>
-                            <p className="text-2xl font-bold">28°C</p>
-                            <p className="text-gray-500">Sunny</p>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                            <p>Humidity: 45%</p>
-                            <p>Wind: 10 km/h</p>
-                        </div>
+                        {quickActions.map((action, i) => (
+                            <button
+                                key={i}
+                                className={`p-4 hover:bg-opacity-80 rounded-lg flex flex-col items-center justify-center transition ${action.bg} ${action.color}`}
+                            >
+                                {action.icon}
+                                <span className="mt-2">{action.label}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -160,7 +154,6 @@ const DashboardOverview = ({ userData }) => {
     );
 };
 
-// Helper function for color classes
 const getColorClasses = (color) => {
     const colors = {
         blue: 'bg-blue-50 text-blue-600',

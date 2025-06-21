@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Swal from 'sweetalert2';
-import { createRazorpayOrder, getRazorpayKey, verifyOrderPayment } from '../../Redux/Slice/orderPaymentSlice';
+import { cashOrder, createRazorpayOrder, getRazorpayKey, verifyOrderPayment } from '../../Redux/Slice/orderPaymentSlice';
 import { clearCart } from '../../Redux/Slice/cartSlice';
 
 function OrderPayment() {
@@ -15,7 +15,6 @@ function OrderPayment() {
     const { items = [], totalPrice = 0, totalQuantity = 0 } = data;
     const { key: razorpayKey } = useSelector(state => state.order);
 
-    console.log(razorpayKey)
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [address, setAddress] = useState({
@@ -45,40 +44,61 @@ function OrderPayment() {
         }
 
         if (paymentMethod === 'COD') {
-            Swal.fire({
-                title: 'Order Confirmed ✅',
-                text: `Payment Method: Cash on Delivery`,
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                navigate('/thank-you');
-            });
+            try {
+
+                const confirmation = await Swal.fire({
+                    title: 'Order Confirmed ✅',
+                    text: `Payment Method: Cash on Delivery`,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+
+                if (confirmation.isConfirmed) {
+                    const res = await dispatch(cashOrder(state?.totalPrice));
+                    if (res?.payload?.success) {
+                        Swal.fire({
+                            title: 'Order Placed 🎉',
+                            text: 'Your cash-on-delivery order has been successfully placed!',
+                            icon: 'success',
+                            confirmButtonText: 'See Order Summary'
+                        }).then(() => {
+                            navigate('/order-summary');
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to confirm COD order',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("COD Payment error", err);
+                Swal.fire('Error', 'Something went wrong during COD', 'error');
+            }
         } else {
             const res = await dispatch(getRazorpayKey());
-            console.log(res)
             if (res?.payload?.success) {
                 await handleOnlinePayment();
             }
         }
     };
 
+
     const handleOnlinePayment = async () => {
         try {
-            console.log(state?.totalPrice)
             const orderRes = await dispatch(createRazorpayOrder(state?.totalPrice))
 
-            console.log(orderRes);
 
             const { orderId, amount, currency } = orderRes?.payload || {};
 
-            console.log(orderId, amount, currency)
 
             if (!orderId) {
                 Swal.fire('Error', 'Failed to create payment order', 'error');
                 return;
             }
 
-            console.log(razorpayKey )
 
             const options = {
                 key: razorpayKey,
@@ -104,9 +124,19 @@ function OrderPayment() {
                                 text: `Payment ID: ${response.razorpay_payment_id}`,
                                 icon: 'success',
                                 confirmButtonText: 'OK',
-                            }).then(() => navigate('/thank-you'));
-                        } else {
-                            throw new Error("Verification failed");
+                            }).then(() => {
+                                dispatch(clearCart()); // optional: clear cart after successful payment
+                                navigate('/order-summary', {
+                                    state: {
+                                        address,
+                                        items,
+                                        totalPrice,
+                                        totalQuantity,
+                                        paymentId: response.razorpay_payment_id,
+                                        orderId: response.razorpay_order_id,
+                                    }
+                                });
+                            });
                         }
                     } catch (err) {
                         console.error("Payment verification failed", err);

@@ -59,7 +59,6 @@ export const updateStore = createAsyncThunk(
     "store/updateStore",
     async ({ id, data }, { rejectWithValue }) => {
         try {
-            console.log(id, data)
             const res = await toast.promise(
                 axiosInstance.put(`/store/update-store/${id}`, data),
                 {
@@ -112,7 +111,6 @@ const storeSlice = createSlice({
 
             // update 
             .addCase(updateStore.fulfilled, (state, action) => {
-                console.log(action.payload)
                 state.store = action.payload.data
             })
     },

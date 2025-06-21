@@ -111,7 +111,6 @@ function AllProduct() {
                                                 </span>
                                             )}
                                         </div>
-                                        {console.log(product)}
 
                                         <button
                                             className={`w-full mt-4 py-2 rounded transition ${product.outOfStock

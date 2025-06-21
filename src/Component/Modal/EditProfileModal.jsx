@@ -17,7 +17,6 @@ function EditProfileModal({ initialData, onClose }) {
 
     useEffect(() => {
         if (initialData) {
-            console.log(initialData)
             setFormData({
                 fullName: initialData.fullName || '',
                 email: initialData.email || '',

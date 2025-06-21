@@ -12,6 +12,7 @@ import AllProduct from './pages/Product/AllProduct';
 import Cart from './pages/Cart/Cart';
 import OrderPayment from './pages/Payment/OrderPayment';
 import ThankYou from './Component/Comman/ThankYou';
+import OrderSummary from './pages/Payment/OrderSummary';
 
 // Reusable wrapper for protected routes
 const ProtectedRoute = ({ isAllowed, children }) => {
@@ -73,6 +74,7 @@ function App() {
                 }
             />
             <Route path="/thank-you" element={<ThankYou />} />
+            <Route path='/order-summary' element={<OrderSummary />} />
 
         </Routes>
     );

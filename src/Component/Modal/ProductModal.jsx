@@ -1,9 +1,6 @@
 import React from 'react';
 
 function ProductModal({ product, onClose }) {
-
-    console.log(product)
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-lg shadow-xl w-[90%] max-w-xl p-6 relative">

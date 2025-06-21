@@ -31,7 +31,6 @@ function ShowStore() {
                 }
                 if (store?._id) {
                     const res = await dispatch(getProductByStoreId(store?._id))
-                    console.log(res)
                 }
             } finally {
                 setIsLoading(false);
@@ -125,10 +124,8 @@ function ShowStore() {
     };
 
     const toggleStock = async (status, productId) => {
-        console.log(status);
 
         const res = await dispatch(changeStockStatus(productId));
-        console.log(res.payload)
         const updatedStatus = res?.payload?.updatedProduct?.outOfStock;
 
         // If product is now back in stock (previously out of stock)
@@ -161,10 +158,7 @@ function ShowStore() {
             });
 
             if (quantity) {
-                // Now dispatch updateQuantity action
-                console.log("hello")
                 const res = await dispatch(updateProductQuantity({ productId, quantity }));
-                console.log(res)
                 Swal.fire({
                     icon: "success",
                     title: "Quantity Updated",
@@ -177,7 +171,6 @@ function ShowStore() {
     };
 
     const handleEditStore = (e) => {
-        console.log("hello")
         e.stopPropagation()
         setEditStoreData(true)
     }

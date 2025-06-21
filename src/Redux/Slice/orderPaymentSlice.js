@@ -34,13 +34,24 @@ export const createRazorpayOrder = createAsyncThunk("orderPayment/createOrder", 
 // 3️⃣ Verify Payment
 export const verifyOrderPayment = createAsyncThunk("orderPayment/verify", async (data, { rejectWithValue }) => {
     try {
-        console.log(data);
         const res = await axiosInstance.post("/order/razorpay/verify", data);
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Verification failed");
     }
 });
+
+
+// cash order 
+export const cashOrder = createAsyncThunk("orderPayment/cashOrder", async (data, { rejectWithValue }) => {
+    try {
+        const res = await axiosInstance.post("/order/cash-order", { amount: data });
+        return res.data;
+
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || "Verification failed");
+    }
+})
 
 
 const orderPaymentSlice = createSlice({

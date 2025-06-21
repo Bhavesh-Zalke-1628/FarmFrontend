@@ -14,7 +14,6 @@ function Cart() {
     const { items, totalQuantity, totalPrice } = useSelector(state => state.cart);
     const { state } = useLocation()
     const handleIncrement = (item) => {
-        console.log(item)
         if (item?.quantity > 0) {
             dispatch(addToCart({ ...item, productId: item.productId, price: item.price }));
         }

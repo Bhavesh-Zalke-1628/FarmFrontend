@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import ProductCard from '../../Component/ui/ProductCard';
-import Pagination from '../../Component/ui/Pagination';
+import Pagination from '../../Component/ui/Pagination'; 
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProduct } from '../../Redux/Slice/productSlice';
 
@@ -23,7 +23,6 @@ const ProductManagementPage = () => {
     const dispatch = useDispatch();
     const { products, loading, error } = useSelector((state) => state.products);
     const { role } = useSelector(state => state?.auth)
-    console.log(role)
 
     // Extract unique categories from products
     const categories = ['All', ...new Set(products.map(product => product.category))];
