@@ -99,6 +99,7 @@ function AllProduct() {
                                     <div className="p-4">
                                         <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
                                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                                        <h3 className="text-lg font-semibold text-gray-800">Stock: {product?.quantity}</h3>
 
                                         <div className="flex items-center gap-2 mt-3">
                                             <span className="text-green-700 font-bold text-lg">

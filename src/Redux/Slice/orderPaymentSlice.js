@@ -14,7 +14,7 @@ const initialState = {
 // 1️⃣ Get Razorpay Key
 export const getRazorpayKey = createAsyncThunk("orderPayment/key", async (_, { rejectWithValue }) => {
     try {
-        const res = await axiosInstance.get("/payment/razorpay/getid");
+        const res = await axiosInstance.get("/order/razorpay/getid");
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Failed to get key");
@@ -24,8 +24,8 @@ export const getRazorpayKey = createAsyncThunk("orderPayment/key", async (_, { r
 // 2️⃣ Create Razorpay Order
 export const createRazorpayOrder = createAsyncThunk("orderPayment/createOrder", async (amount, { rejectWithValue }) => {
     try {
-        const res = await axiosInstance.post("/payment/razorpay/order", { amount });
-        return res.data;
+        const res = await axiosInstance.post("/order/razorpay/order", { amount });
+        return await res.data?.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Order creation failed");
     }
@@ -34,12 +34,14 @@ export const createRazorpayOrder = createAsyncThunk("orderPayment/createOrder", 
 // 3️⃣ Verify Payment
 export const verifyOrderPayment = createAsyncThunk("orderPayment/verify", async (data, { rejectWithValue }) => {
     try {
-        const res = await axiosInstance.post("/payment/razorpay/verify", data);
+        console.log(data);
+        const res = await axiosInstance.post("/order/razorpay/verify", data);
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Verification failed");
     }
 });
+
 
 const orderPaymentSlice = createSlice({
     name: "orderPayment",

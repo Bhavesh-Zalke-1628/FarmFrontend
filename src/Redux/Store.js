@@ -12,7 +12,7 @@ const store = configureStore({
         payment: razorpaySlice,
         products: productSlice,
         cart: cartSlice,
-        orderPayment: orderPaymentSlice
+        order: orderPaymentSlice
     },
     devTools: process.env.NODE_ENV !== 'production', // Enable dev tools only in development
 });

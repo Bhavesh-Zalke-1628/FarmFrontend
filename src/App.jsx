@@ -10,6 +10,8 @@ import AccessDenied from './pages/AccessDenied';
 import FarmerDashboard from './pages/FarmerDashboard';
 import AllProduct from './pages/Product/AllProduct';
 import Cart from './pages/Cart/Cart';
+import OrderPayment from './pages/Payment/OrderPayment';
+import ThankYou from './Component/Comman/ThankYou';
 
 // Reusable wrapper for protected routes
 const ProtectedRoute = ({ isAllowed, children }) => {
@@ -44,6 +46,16 @@ function App() {
                 }
             />
             <Route
+                path="/order-checkout"
+                element={
+                    <ProtectedRoute isAllowed={isLoggedIn}>
+                        <OrderPayment />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            <Route
                 path="/products"
                 element={
                     <ProtectedRoute isAllowed={isLoggedIn}>
@@ -60,6 +72,7 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route path="/thank-you" element={<ThankYou />} />
 
         </Routes>
     );

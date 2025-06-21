@@ -6,14 +6,19 @@ import {
     addToCart,
     clearCart
 } from '../../Redux/Slice/cartSlice';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Cart() {
+    const navigate = useNavigate()
     const dispatch = useDispatch();
     const { items, totalQuantity, totalPrice } = useSelector(state => state.cart);
-
+    const { state } = useLocation()
     const handleIncrement = (item) => {
-        dispatch(addToCart({ ...item, productId: item.productId, price: item.price }));
+        console.log(item)
+        if (item?.quantity > 0) {
+            dispatch(addToCart({ ...item, productId: item.productId, price: item.price }));
+        }
+
     };
 
     const handleDecrement = (productId) => {
@@ -27,6 +32,10 @@ function Cart() {
     const handleClearCart = () => {
         dispatch(clearCart());
     };
+
+    const handlePurchase = () => {
+        navigate("/order-checkout", { state: { items, totalPrice, totalQuantity } })
+    }
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-10">
@@ -116,6 +125,7 @@ function Cart() {
                                 🗑️ Clear Cart
                             </button>
                             <button
+                                onClick={handlePurchase}
                                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow hover:shadow-md transition duration-200 w-full sm:w-auto"
                             >
                                 ✅ Proceed to Checkout
