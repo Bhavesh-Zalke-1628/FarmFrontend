@@ -948,9 +948,9 @@ const DashboardSection = ({
             </div>
             <div className=' mt-2 shadow-lg'>
                 <AiAgriAssistant
-                    // language={language}
-                    // userRegion={dashboardData.userRegion || "Maharashtra"}
-                    // currentCrop={userType === 'farmer' ? user.farmDetails?.primaryCrop || "sugarcane" : "sugarcane"}
+                // language={language}
+                // userRegion={dashboardData.userRegion || "Maharashtra"}
+                // currentCrop={userType === 'farmer' ? user.farmDetails?.primaryCrop || "sugarcane" : "sugarcane"}
                 />
             </div>
         </>
@@ -1056,9 +1056,26 @@ const MarketplaceSection = ({ products, renderStars, randomColorClass, language,
                                 </h3>
 
                                 {/* Price */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-green-600 font-bold text-lg">₹{product.price}</span>
+                                <div className="flex items-center gap-2 mt-2">
+                                    {product.offerPercentage > 0 ? (
+                                        <>
+                                            <span className="text-green-600 font-bold text-lg">
+                                                ₹{Math.round(product.price - (product.price * product.offerPercentage) / 100)}
+                                            </span>
+                                            <span className="line-through text-gray-400 text-sm">
+                                                ₹{product.price}
+                                            </span>
+                                            <span className="text-red-600 font-semibold text-sm">
+                                                ({product.offerPercentage}% OFF)
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="text-green-600 font-bold text-lg">
+                                            ₹{product.price}
+                                        </span>
+                                    )}
                                 </div>
+
 
                                 {/* Quantity */}
                                 <div className="text-sm">

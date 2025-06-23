@@ -302,7 +302,26 @@ function ShowStore() {
                                                     </div>
 
                                                     <div className="mt-3 flex items-center justify-between">
-                                                        <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            {product.offerPercentage > 0 ? (
+                                                                <>
+                                                                    <span className="text-green-600 font-bold text-lg">
+                                                                        ₹{Math.round(product.price - (product.price * product.offerPercentage) / 100)}
+                                                                    </span>
+                                                                    <span className="line-through text-gray-400 text-sm">
+                                                                        ₹{product.price}
+                                                                    </span>
+                                                                    <span className="text-red-600 font-semibold text-sm">
+                                                                        ({product.offerPercentage}% OFF)
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-green-600 font-bold text-lg">
+                                                                    ₹{product.price}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
                                                         {product.originalPrice && (
                                                             <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                                                         )}

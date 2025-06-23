@@ -55,7 +55,7 @@ export const createProduct = createAsyncThunk(
                 axiosInstance.post(`/product/create-product/${storeId}`, productData, {
                     headers: { "Content-Type": "multipart/form-data" },
                 }),
-                {   
+                {
                     pending: "Creating product...",
                     success: "Product created successfully 🎉",
                     error: "Failed to create product 😞",
@@ -72,11 +72,14 @@ export const createProduct = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
     "product/update",
     async ({ productId, productData }, { rejectWithValue }) => {
+        for (let [key, value] of productData.entries()) {
+            console.log(`${key}:`, value);
+        }
+
+        console.log(productData, productId)
         try {
             const res = await toast.promise(
-                axiosInstance.put(`/product/update-product/${productId}`, productData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                }),
+                axiosInstance.put(`/product/update-product/${productId}`, productData),
                 {
                     pending: "Updating product...",
                     success: "Product updated successfully ✅",

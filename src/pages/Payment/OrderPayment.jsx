@@ -15,7 +15,6 @@ function OrderPayment() {
     const { items = [], totalPrice = 0, totalQuantity = 0 } = data;
     const { key: razorpayKey } = useSelector(state => state.order);
 
-
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [address, setAddress] = useState({
         fullName: '',
@@ -55,6 +54,7 @@ function OrderPayment() {
 
                 if (confirmation.isConfirmed) {
                     const res = await dispatch(cashOrder(state?.totalPrice));
+                    console.log(res)
                     if (res?.payload?.success) {
                         Swal.fire({
                             title: 'Order Placed 🎉',
@@ -79,6 +79,7 @@ function OrderPayment() {
             }
         } else {
             const res = await dispatch(getRazorpayKey());
+            console.log(res)
             if (res?.payload?.success) {
                 await handleOnlinePayment();
             }
@@ -89,11 +90,11 @@ function OrderPayment() {
     const handleOnlinePayment = async () => {
         try {
             const orderRes = await dispatch(createRazorpayOrder(state?.totalPrice))
-
+            console.log(orderRes)
 
             const { orderId, amount, currency } = orderRes?.payload || {};
 
-
+            console.log(orderId, amount, currency)
             if (!orderId) {
                 Swal.fire('Error', 'Failed to create payment order', 'error');
                 return;

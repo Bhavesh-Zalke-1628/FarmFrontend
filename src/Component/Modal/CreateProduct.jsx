@@ -80,7 +80,7 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
         { label: "Product Name", name: "name", icon: <Store size={18} /> },
         { label: "Company", name: "company", icon: <Factory size={18} /> },
         { label: "Quantity", name: "quantity", type: "number", icon: <ListOrdered size={18} /> },
-        { label: "Offer", name: "offer", type: "number", icon: <ListOrdered size={18} /> },
+        { label: "Offer", name: "offerPercentage", type: "number", icon: <ListOrdered size={18} /> },
         { label: "Price", name: "price", type: "number", icon: <DollarSign size={18} /> },
         { label: "Description", name: "description", multiline: true, icon: <FileText size={18} /> },
     ];
@@ -111,13 +111,18 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
         if (formData.productImg instanceof File) {
             payload.append("productImg", formData.productImg);
         }
-
         setLoading(true); // Start loading
+
+        // Log FormData properly
+        for (let [key, value] of payload.entries()) {
+            console.log(`${key}:`, value);
+        }
+
 
         try {
             let result;
-
             if (initialData && initialData._id) {
+                console.log("hello")
                 result = await dispatch(updateProduct({
                     productId: initialData._id,
                     productData: payload

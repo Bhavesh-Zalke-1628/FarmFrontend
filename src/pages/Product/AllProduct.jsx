@@ -5,6 +5,7 @@ import Layout from '../../Layout/Layout';
 import ProductModal from '../../Component/Modal/ProductModal';
 import Swal from 'sweetalert2';
 import { addToCart } from '../../Redux/Slice/cartSlice';
+import ProductCard from '../../Component/ui/ProductCard';
 
 function AllProduct() {
     const dispatch = useDispatch();
@@ -38,11 +39,6 @@ function AllProduct() {
                 icon: 'info',
                 title: 'Login Required',
                 text: 'Please login to add items to your cart.',
-                customClass: {
-                    popup: 'custom-swal-popup',
-                    title: 'custom-swal-title',
-                    content: 'custom-swal-text'
-                }
             });
             return;
         }
@@ -70,70 +66,31 @@ function AllProduct() {
     return (
         <Layout>
             <div className="p-5 max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Explore Our Products</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    Explore Our Products
+                </h1>
 
                 {loading ? (
                     <p className="text-center text-gray-600">Loading products...</p>
                 ) : error ? (
-                    <p className="text-center text-red-600">Failed to load products. Please try again later.</p>
+                    <p className="text-center text-red-600">Failed to load products.</p>
+                ) : products.length > 0 ? (
+                    <ProductCard
+                        products={products}
+                        handleAddToCart={handleAddToCart}
+                        handleProductClick={handleProductClick}
+                    />
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-3">
-                        {products.length > 0 ? (
-                            products.map((product) => (
-                                <div
-                                    key={product._id}
-                                    className="border rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300 bg-white cursor-pointer"
-                                    onClick={() => handleProductClick(product)}
-                                >
-                                    <div className="h-48 overflow-hidden bg-gray-100 flex justify-center items-center">
-                                        {product?.img ? (
-                                            <img
-                                                src={product?.img?.secure_url}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover transform hover:scale-105 transition duration-300"
-                                            />
-                                        ) : (
-                                            <div className="text-gray-400">No Image</div>
-                                        )}
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
-                                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
-                                        <h3 className="text-lg font-semibold text-gray-800">Stock: {product?.quantity}</h3>
-
-                                        <div className="flex items-center gap-2 mt-3">
-                                            <span className="text-green-700 font-bold text-lg">
-                                                ₹{product.price}
-                                            </span>
-                                            {product.originalPrice && (
-                                                <span className="line-through text-sm text-gray-400">
-                                                    ₹{product.originalPrice}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            className={`w-full mt-4 py-2 rounded transition ${product.outOfStock
-                                                ? "bg-gray-400 cursor-not-allowed text-white"
-                                                : "bg-green-600 hover:bg-green-700 text-white"
-                                                }`}
-                                            onClick={(e) => handleAddToCart(e, product)}
-                                            disabled={product.stock === 0}
-                                        >
-                                            {product.outOfStock ? "Out of Stock" : "Add to Cart"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center text-gray-500">No products found.</div>
-                        )}
-                    </div>
+                    <div className="text-center text-gray-500">No products found.</div>
                 )}
 
-                {/* Product Details Modal */}
                 {showModal && selectedProduct && (
-                    <ProductModal product={selectedProduct} onClose={closeModal} />
+                    <ProductModal
+                        initialData={selectedProduct}
+                        open={showModal}
+                        handleClose={closeModal}
+                        storeId={selectedProduct?.store}
+                    />
                 )}
             </div>
         </Layout>
