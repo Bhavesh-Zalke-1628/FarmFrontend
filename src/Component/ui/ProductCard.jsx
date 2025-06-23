@@ -10,7 +10,7 @@ const ProductCard = ({ product, onClick }) => {
             {/* Product Image */}
             <div className="aspect-square bg-gray-100 overflow-hidden">
                 <img
-                    src={product.image}
+                    src={product.img?.secure_url}
                     alt={product.name}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />

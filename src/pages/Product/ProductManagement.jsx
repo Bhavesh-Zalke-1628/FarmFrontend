@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import ProductCard from '../../Component/ui/ProductCard';
-import Pagination from '../../Component/ui/Pagination'; 
+import Pagination from '../../Component/ui/Pagination';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProduct } from '../../Redux/Slice/productSlice';
+import ProductModal from '../../Component/Modal/CreateProduct';
 
 const ProductManagementPage = () => {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ const ProductManagementPage = () => {
     const [sortOption, setSortOption] = useState('featured');
     const [currentPage, setCurrentPage] = useState(1);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+    const [showCreateProduct, setShowCreateProduct] = useState(false)
     const productsPerPage = 12;
 
     const dispatch = useDispatch();
@@ -92,6 +94,8 @@ const ProductManagementPage = () => {
         setPriceRange([0, 1000]);
         setSortOption('featured');
     };
+
+
 
     if (loading) {
         return (
@@ -193,7 +197,7 @@ const ProductManagementPage = () => {
                     <p className="text-lg mb-4">Manage your product inventory</p>
                     {role === "admin" &&
                         <Link Link
-                            to="/products/new"
+                            onClick={() => setShowCreateProduct(!showCreateProduct)}
                             className="inline-flex items-center px-4 py-2 bg-white text-green-700 rounded-lg font-medium hover:bg-gray-100"
                         >
                             <Plus size={18} className="mr-2" />
@@ -337,6 +341,14 @@ const ProductManagementPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* <ProductModal
+                // storeId={store?._id}
+                open={showCreateProduct}
+                handleClose={() => {
+                    setShowCreateProduct(false);
+                }}
+            /> */}
         </div >
     );
 };

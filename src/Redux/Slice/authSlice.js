@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 // Initial state
 const initialState = {
     isLoggedIn: localStorage.getItem("isLoggedIn") === "true",
-    role: localStorage.getItem("role") || "",
+    role: localStorage.getItem("role") || null,
     data: JSON.parse(localStorage.getItem("data")) || {},
     users: []
 };
