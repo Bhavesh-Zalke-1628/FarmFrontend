@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
-import SignIn from './pages/Signin';
 import Checkout from './pages/Payment/CheckOut';
 import AccessDenied from './pages/AccessDenied';
 import FarmerDashboard from './pages/FarmerDashboard';
@@ -14,6 +13,7 @@ import OrderPayment from './pages/Payment/OrderPayment';
 import ThankYou from './Component/Comman/ThankYou';
 import OrderSummary from './pages/Payment/OrderSummary';
 import FarmerFancyHomePage from './pages/FarmerHomePage';
+import SignIn from './pages/SignIn';
 
 // Reusable wrapper for protected routes
 const ProtectedRoute = ({ isAllowed, children }) => {
