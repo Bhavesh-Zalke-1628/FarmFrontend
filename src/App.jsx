@@ -12,7 +12,6 @@ import Cart from './pages/Cart/Cart';
 import OrderPayment from './pages/Payment/OrderPayment';
 import ThankYou from './Component/Comman/ThankYou';
 import OrderSummary from './pages/Payment/OrderSummary';
-import FarmerFancyHomePage from './pages/FarmerHomePage';
 import SignIn from './pages/SignIn';
 
 // Reusable wrapper for protected routes
@@ -76,7 +75,6 @@ function App() {
             />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path='/order-summary' element={<OrderSummary />} />
-            <Route path='/farmer-home' element={<FarmerFancyHomePage />} />
 
         </Routes>
     );
