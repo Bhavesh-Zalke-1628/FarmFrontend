@@ -3,7 +3,7 @@ import React from "react";
 const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
     // Sort products: offer products first
     const sortedProducts = [...products].sort((a, b) => (b.offerPercentage || 0) - (a.offerPercentage || 0));
-
+    console.log(products)
     const renderCard = (product) => {
         const discountedPrice = Math.round(
             product.price - (product.price * product.offerPercentage) / 100

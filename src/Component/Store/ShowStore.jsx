@@ -3,7 +3,7 @@ import CreateStoreModal from '../Modal/CreateStoreModel';
 import CreateProductModal from '../Modal/CreateProduct';
 import ViewProduct from '../Modal/ViewProduct';
 import { Button } from '@mui/material';
-import { Pencil, Trash2, Plus, Store, Package, Info } from 'lucide-react';
+import { Pencil, Trash2, Plus, Store, Package, Info, CookingPot } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
@@ -33,10 +33,14 @@ function ShowStore() {
             setIsLoading(true);
             try {
                 if (userData?._id && !store?._id) {
-                    await dispatch(getStoreDetails(userData._id));
+                    console.log(store?._id)
+                    console.log(userData?._id)
+                    const res = await dispatch(getStoreDetails(userData?._id));
+                    console.log(res)
                 }
                 if (store?._id) {
                     const res = await dispatch(getProductByStoreId(store?._id))
+                    console.log(res)
                 }
             } finally {
                 setIsLoading(false);
