@@ -113,16 +113,12 @@ const ProductModal = ({ open, handleClose, storeId, initialData = null }) => {
         }
         setLoading(true); // Start loading
 
-        // Log FormData properly
-        for (let [key, value] of payload.entries()) {
-            console.log(`${key}:`, value);
-        }
+ 
 
 
         try {
             let result;
             if (initialData && initialData._id) {
-                console.log("hello")
                 result = await dispatch(updateProduct({
                     productId: initialData._id,
                     productData: payload

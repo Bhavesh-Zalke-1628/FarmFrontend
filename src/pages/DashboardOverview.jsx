@@ -13,7 +13,6 @@ const DashboardOverview = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { role, data: userData, users } = useSelector(state => state?.auth)
-    console.log(users)
 
     const isAdmin = role === "admin";
     const isFarmer = role === "farmer";
@@ -21,7 +20,6 @@ const DashboardOverview = () => {
 
     useEffect(() => {
         const res = dispatch(getAllUsers())
-        console.log(res)
     }, [dispatch])
     const stats = isAdmin ? [
         { icon: <Users size={24} />, title: "Total Farmers", value: "153", change: "+12 new", trend: "up", color: "blue" },

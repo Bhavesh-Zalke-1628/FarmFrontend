@@ -42,7 +42,6 @@ export default function Header() {
 
         if (result.isConfirmed) {
             const res = await dispatch(logoutAccount());
-            console.log(res)
             if (res?.payload?.success) {
                 navigate('/');
             }

@@ -63,8 +63,7 @@ const MaharashtraFarmerDashboard = () => {
 
     // Determine user type
     const userType = role || 'guest'; // 'farmer', 'buyer', or 'guest'
-    console.log(role)
-    console.log(userType)
+  
     // Mock data - replace with actual API calls
     const weatherData = [
         { day: 'सोम', condition: 'Sunny', temp: '32°C', rain: '10%', region: 'नाशिक' },
@@ -351,7 +350,6 @@ const MaharashtraFarmerDashboard = () => {
                                 </motion.div>
                             )}
 
-                            {console.log(user)}
                         </div>
                     </div>
                 </div>

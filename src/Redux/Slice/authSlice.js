@@ -31,9 +31,7 @@ export const createAccount = createAsyncThunk("/signup", async (data, { rejectWi
 // ✅ Getting all user
 export const getAllUsers = createAsyncThunk("/all-users", async (_, { rejectWithValue }) => {
     try {
-        console.log("hello")
         const res = await axiosInstance.get("/users/get-all-users")
-        console.log(res.data)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Something went wrong");
@@ -180,7 +178,6 @@ const authSlice = createSlice({
 
             // gettting all users
             .addCase(getAllUsers.fulfilled, (state, action) => {
-                console.log(action.payload)
                 state.users = action.payload.data || []
             })
     },
