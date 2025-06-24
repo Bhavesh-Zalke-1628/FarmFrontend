@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
 import { changeStockStatus, deleteProduct, getAllProduct, getProductByStoreId, updateProductQuantity } from '../../Redux/Slice/productSlice';
 import EditStoreModal from '../Modal/EditStoreModal';
+import { data } from 'react-router-dom';
 
 function ShowStore() {
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -21,6 +22,11 @@ function ShowStore() {
     const { data: userData } = useSelector((state) => state.auth);
     const { store, loading: storeLoading } = useSelector((state) => state?.store);
     const { products, loading: productsLoading } = useSelector((state) => state.products);
+
+
+    console.log(userData)
+    console.log(store)
+    console.log(products)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -159,6 +165,7 @@ function ShowStore() {
 
             if (quantity) {
                 const res = await dispatch(updateProductQuantity({ productId, quantity }));
+                console.log(res)
                 Swal.fire({
                     icon: "success",
                     title: "Quantity Updated",
