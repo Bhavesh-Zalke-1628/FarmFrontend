@@ -70,7 +70,6 @@ const StoreFormModal = ({ open, handleClose }) => {
 
                         const verifyRes = await dispatch(verifyUserPayment(paymentDetails));
 
-                        console.log(verifyRes)
 
                         if (verifyRes?.payload?.success) {
                             Swal.fire("Success", "Store created & payment verified!", "success");

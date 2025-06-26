@@ -24,23 +24,17 @@ function ShowStore() {
     const { products, loading: productsLoading } = useSelector((state) => state.products);
 
 
-    console.log(userData)
-    console.log(store)
-    console.log(products)
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
                 if (userData?._id && !store?._id) {
-                    console.log(store?._id)
-                    console.log(userData?._id)
+                  
                     const res = await dispatch(getStoreDetails(userData?._id));
-                    console.log(res)
                 }
                 if (store?._id) {
                     const res = await dispatch(getProductByStoreId(store?._id))
-                    console.log(res)
                 }
             } finally {
                 setIsLoading(false);
@@ -169,7 +163,6 @@ function ShowStore() {
 
             if (quantity) {
                 const res = await dispatch(updateProductQuantity({ productId, quantity }));
-                console.log(res)
                 Swal.fire({
                     icon: "success",
                     title: "Quantity Updated",
