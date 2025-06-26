@@ -31,18 +31,18 @@ const AiAgriAssistant = ({ language, userRegion, currentCrop }) => {
         }
     ];
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (!query.trim()) return;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!query.trim()) return;
 
-    //     setIsLoading(true);
-    //     const aiResponse = await getAgriculturalInsights(
-    //         `User location: ${userRegion}. Current crop: ${currentCrop}. Query: ${query}`,
-    //         language
-    //     );
-    //     setResponse(aiResponse);
-    //     setIsLoading(false);
-    // };
+        setIsLoading(true);
+        const aiResponse = await getAgriculturalInsights(
+            `User location: ${userRegion}. Current crop: ${currentCrop}. Query: ${query}`,
+            language
+        );
+        setResponse(aiResponse);
+        setIsLoading(false);
+    };
 
     const handleQuickPrompt = async (tab) => {
         setActiveTab(tab);
@@ -72,9 +72,9 @@ const AiAgriAssistant = ({ language, userRegion, currentCrop }) => {
                 break;
         }
 
-        // const aiResponse = await getAgriculturalInsights(prompt, language);
-        // setResponse(aiResponse);
-        // setIsLoading(false);
+        const aiResponse = await getAgriculturalInsights(prompt, language);
+        setResponse(aiResponse);
+        setIsLoading(false);
     };
 
     return (

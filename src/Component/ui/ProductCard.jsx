@@ -1,13 +1,19 @@
 import React from "react";
 
 const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
-    // Sort products: offer products first
-    const sortedProducts = [...products].sort((a, b) => (b.offerPercentage || 0) - (a.offerPercentage || 0));
-    console.log(products)
+    const MAX_SCROLL_CARDS = 7;
+
+    // Sort: Offers first
+    const sortedProducts = [...products].sort(
+        (a, b) => (b.offerPercentage || 0) - (a.offerPercentage || 0)
+    );
+
     const renderCard = (product) => {
         const discountedPrice = Math.round(
-            product.price - (product.price * product.offerPercentage) / 100
+            product.price - (product.price * (product.offerPercentage || 0)) / 100
         );
+
+        const isOutOfStock = product.stock <= 0;
 
         return (
             <div
@@ -16,9 +22,9 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                 onClick={() => handleProductClick(product)}
             >
                 <div className="h-48 overflow-hidden bg-gray-100 flex justify-center items-center">
-                    {product?.img ? (
+                    {product?.img?.secure_url ? (
                         <img
-                            src={product?.img?.secure_url}
+                            src={product.img.secure_url}
                             alt={product.name}
                             className="w-full h-full object-cover hover:scale-105 transition duration-300"
                         />
@@ -26,10 +32,11 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                         <div className="text-gray-400">No Image</div>
                     )}
                 </div>
+
                 <div className="p-4">
                     <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
                     <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
-                    <h3 className="text-sm text-gray-600 mt-1">Stock: {product?.quantity}</h3>
+                    <p className="text-sm text-gray-600 mt-1">Stock: {product.quantity}</p>
 
                     <div className="flex items-center gap-2 mt-3">
                         {product.offerPercentage > 0 ? (
@@ -52,7 +59,7 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                     </div>
 
                     <button
-                        className={`w-full mt-4 py-2 rounded transition ${product.outOfStock
+                        className={`w-full mt-4 py-2 rounded transition ${isOutOfStock
                             ? "bg-gray-400 cursor-not-allowed text-white"
                             : "bg-green-600 hover:bg-green-700 text-white"
                             }`}
@@ -60,23 +67,23 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                             e.stopPropagation();
                             handleAddToCart(e, product);
                         }}
-                        disabled={product.stock === 0}
+                        disabled={isOutOfStock}
                     >
-                        {product.outOfStock ? "Out of Stock" : "Add to Cart"}
+                        {isOutOfStock ? "Out of Stock" : "Add to Cart"}
                     </button>
                 </div>
             </div>
         );
     };
 
-    const firstSeven = sortedProducts.slice(0, 7);
-    const remaining = sortedProducts.slice(7);
+    const firstFew = sortedProducts.slice(0, MAX_SCROLL_CARDS);
+    const remaining = sortedProducts.slice(MAX_SCROLL_CARDS);
 
     return (
         <>
-            {/* Mobile Horizontal Scroll (first 7) */}
+            {/* Mobile Horizontal Scroll (Top Offers) */}
             <div className="sm:hidden overflow-x-auto px-2 py-4 hide-scrollbar">
-                <div className="flex gap-4">{firstSeven.map(renderCard)}</div>
+                <div className="flex gap-4">{firstFew.map(renderCard)}</div>
             </div>
 
             {/* Mobile Vertical Remaining */}
@@ -84,7 +91,7 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                 {remaining.map(renderCard)}
             </div>
 
-            {/* Desktop Grid (all products) */}
+            {/* Desktop Grid View */}
             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 pb-6">
                 {sortedProducts.map(renderCard)}
             </div>

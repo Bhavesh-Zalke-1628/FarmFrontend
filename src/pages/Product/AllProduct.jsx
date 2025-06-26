@@ -43,7 +43,7 @@ function AllProduct() {
             return;
         }
 
-        if (product.stock === 0) {
+        if (!product.quantity || product.quantity <= 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Out of Stock',
@@ -52,14 +52,18 @@ function AllProduct() {
             return;
         }
 
-        dispatch(addToCart({ ...product, productId: product._id, quantity: 1 }));
+        dispatch(addToCart({
+            ...product,
+            productId: product._id,
+            quantity: 1
+        }));
 
         Swal.fire({
             position: 'center',
             icon: 'success',
             title: 'Added to cart!',
             showConfirmButton: false,
-            timer: 500,
+            timer: 800,
         });
     };
 
@@ -74,7 +78,7 @@ function AllProduct() {
                     <p className="text-center text-gray-600">Loading products...</p>
                 ) : error ? (
                     <p className="text-center text-red-600">Failed to load products.</p>
-                ) : products.length > 0 ? (
+                ) : products?.length ? (
                     <ProductCard
                         products={products}
                         handleAddToCart={handleAddToCart}
@@ -82,15 +86,6 @@ function AllProduct() {
                     />
                 ) : (
                     <div className="text-center text-gray-500">No products found.</div>
-                )}
-
-                {showModal && selectedProduct && (
-                    <ProductModal
-                        initialData={selectedProduct}
-                        open={showModal}
-                        handleClose={closeModal}
-                        storeId={selectedProduct?.store}
-                    />
                 )}
             </div>
         </Layout>

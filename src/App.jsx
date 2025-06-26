@@ -13,6 +13,7 @@ import OrderPayment from './pages/Payment/OrderPayment';
 import ThankYou from './Component/Comman/ThankYou';
 import OrderSummary from './pages/Payment/OrderSummary';
 import SignIn from './pages/SignIn';
+import ProductDetailsPage from './pages/Product/ProductDetailsPage';
 
 // Reusable wrapper for protected routes
 const ProtectedRoute = ({ isAllowed, children }) => {
@@ -71,6 +72,15 @@ function App() {
                     <ProtectedRoute isAllowed={isLoggedIn}>
                         <Cart />
                     </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path='/product/:id'
+                element={
+                    // <ProtectedRoute isAllowed={isLoggedIn}>
+                    <ProductDetailsPage />
+                    // </ProtectedRoute>
                 }
             />
             <Route path="/thank-you" element={<ThankYou />} />

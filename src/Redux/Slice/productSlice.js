@@ -72,8 +72,6 @@ export const createProduct = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
     "product/update",
     async ({ productId, productData }, { rejectWithValue }) => {
-
-
         try {
             const res = await toast.promise(
                 axiosInstance.put(`/product/update-product/${productId}`, productData),
