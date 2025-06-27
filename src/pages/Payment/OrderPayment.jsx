@@ -1,101 +1,89 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Swal from 'sweetalert2';
-import { cashOrder, createRazorpayOrder, getRazorpayKey, verifyOrderPayment } from '../../Redux/Slice/orderPaymentSlice';
+import {
+    cashOrder,
+    createRazorpayOrder,
+    getRazorpayKey,
+    verifyOrderPayment
+} from '../../Redux/Slice/orderPaymentSlice';
 import { clearCart } from '../../Redux/Slice/cartSlice';
+import Layout from '../../Layout/Layout';
 
 function OrderPayment() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { state } = useLocation();
-    const cartState = useSelector((s) => s.cart);
-    const data = state || cartState;
+    const cart = useSelector(state => state.cart);
+    const razorpayKey = useSelector(state => state.order.key);
 
-    const { items = [], totalPrice = 0, totalQuantity = 0 } = data;
-    const { key: razorpayKey } = useSelector(state => state.order);
+    const {
+        items = [],
+        totalPrice = 0,
+        totalQuantity = 0
+    } = state || cart;
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [address, setAddress] = useState({
         fullName: '',
         phone: '',
+        addressLine: '',
         city: '',
         state: '',
-        zip: '',
-        addressLine: ''
+        zip: ''
     });
 
     const handleInputChange = (e) => {
-        setAddress({
-            ...address,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setAddress(prev => ({ ...prev, [name]: value }));
     };
 
-    const validateAddress = () => {
-        return Object.values(address).every(val => val.trim() !== '');
-    };
+    const validateAddress = () => Object.values(address).every(val => val.trim() !== '');
 
-    const handleConfirmPayment = async () => {
-        if (!validateAddress()) {
-            Swal.fire('Error', 'Please fill all address fields', 'error');
-            return;
-        }
+    const handleCODPayment = async () => {
+        try {
+            const confirm = await Swal.fire({
+                title: 'Order Confirmed ✅',
+                text: 'Payment Method: Cash on Delivery',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
 
-        if (paymentMethod === 'COD') {
-            try {
+            if (confirm.isConfirmed) {
+                const res = await dispatch(cashOrder(totalPrice));
 
-                const confirmation = await Swal.fire({
-                    title: 'Order Confirmed ✅',
-                    text: `Payment Method: Cash on Delivery`,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
+                console.log("res", res)
 
-                if (confirmation.isConfirmed) {
-                    const res = await dispatch(cashOrder(state?.totalPrice));
-                    if (res?.payload?.success) {
-                        Swal.fire({
-                            title: 'Order Placed 🎉',
-                            text: 'Your cash-on-delivery order has been successfully placed!',
-                            icon: 'success',
-                            confirmButtonText: 'See Order Summary'
-                        }).then(() => {
-                            navigate('/order-summary');
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Failed to confirm COD order',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
+                if (res?.payload?.success) {
+                    Swal.fire({
+                        title: 'Order Placed 🎉',
+                        text: 'Your cash-on-delivery order has been successfully placed!',
+                        icon: 'success',
+                        confirmButtonText: 'See Order Summary'
+                    }).then(() => {
+                        dispatch(clearCart());
+                        navigate('/order-summary');
+                    });
+                } else {
+                    throw new Error('COD order failed');
                 }
-            } catch (err) {
-                console.error("COD Payment error", err);
-                Swal.fire('Error', 'Something went wrong during COD', 'error');
             }
-        } else {
-            const res = await dispatch(getRazorpayKey());
-            if (res?.payload?.success) {
-                await handleOnlinePayment();
-            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Something went wrong during COD', 'error');
         }
     };
-
 
     const handleOnlinePayment = async () => {
         try {
-            const orderRes = await dispatch(createRazorpayOrder(state?.totalPrice))
+            const keyRes = await dispatch(getRazorpayKey());
+            if (!keyRes?.payload?.success) throw new Error('Key fetch failed');
 
+            const orderRes = await dispatch(createRazorpayOrder(totalPrice));
             const { orderId, amount, currency } = orderRes?.payload || {};
 
-            if (!orderId) {
-                Swal.fire('Error', 'Failed to create payment order', 'error');
-                return;
-            }
-
+            if (!orderId) throw new Error('Razorpay order creation failed');
 
             const options = {
                 key: razorpayKey,
@@ -104,25 +92,23 @@ function OrderPayment() {
                 name: 'My Store',
                 description: 'Order Payment',
                 order_id: orderId,
-                handler: async function (response) {
+                handler: async (response) => {
                     try {
-                        const paymentDetails = {
+                        const result = await dispatch(verifyOrderPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
-                            amount,
-                        };
-
-                        const result = await dispatch(verifyOrderPayment(paymentDetails))
+                            amount
+                        }));
 
                         if (result?.payload?.success) {
                             Swal.fire({
                                 title: 'Payment Successful ✅',
                                 text: `Payment ID: ${response.razorpay_payment_id}`,
                                 icon: 'success',
-                                confirmButtonText: 'OK',
+                                confirmButtonText: 'OK'
                             }).then(() => {
-                                dispatch(clearCart()); // optional: clear cart after successful payment
+                                dispatch(clearCart());
                                 navigate('/order-summary', {
                                     state: {
                                         address,
@@ -130,13 +116,13 @@ function OrderPayment() {
                                         totalPrice,
                                         totalQuantity,
                                         paymentId: response.razorpay_payment_id,
-                                        orderId: response.razorpay_order_id,
+                                        orderId: response.razorpay_order_id
                                     }
                                 });
                             });
                         }
                     } catch (err) {
-                        console.error("Payment verification failed", err);
+                        console.error('Payment verification failed', err);
                         Swal.fire('Error', 'Payment verification failed', 'error');
                     }
                 },
@@ -148,94 +134,127 @@ function OrderPayment() {
                 notes: {
                     address: `${address.addressLine}, ${address.city}, ${address.state}, ${address.zip}`
                 },
-                theme: {
-                    color: '#22c55e'
-                }
+                theme: { color: '#22c55e' }
             };
 
             const rzp = new window.Razorpay(options);
             rzp.open();
         } catch (err) {
-            console.error("Payment error:", err);
-            Swal.fire('Error', 'Something went wrong with Razorpay', 'error');
+            console.error('Online payment error:', err);
+            Swal.fire('Error', 'Something went wrong with online payment', 'error');
         }
     };
 
+    const handleConfirmPayment = () => {
+        if (!validateAddress()) {
+            Swal.fire('Error', 'Please fill all address fields', 'error');
+            return;
+        }
 
+        paymentMethod === 'COD' ? handleCODPayment() : handleOnlinePayment();
+    };
 
     if (items.length === 0) {
         return (
             <div className="text-center mt-20 text-gray-500">
-                <h2 className="text-2xl font-bold mb-4">No items in your cart</h2>
+                <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
                 <button
                     onClick={() => navigate('/products')}
                     className="text-green-600 font-semibold hover:underline"
                 >
-                    Browse Products →
+                    Continue Shopping →
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-10">
-            <h1 className="text-3xl font-bold text-green-800 mb-6 text-center">🛒 Checkout & Payment</h1>
 
-            {/* Order Items */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-bold mb-4">📦 Order Items</h2>
-                {items.map((item) => (
-                    <div key={item.productId} className="flex justify-between items-center border-b py-3">
-                        <div>
-                            <p className="font-semibold">{item.name}</p>
-                            <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+        <Layout>
+
+            <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left: Address + Payment */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Shipping Address */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h2 className="text-xl font-bold mb-4">🏠 Shipping Address</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {[
+                                ['fullName', 'Full Name'],
+                                ['phone', 'Phone Number'],
+                                ['addressLine', 'Street Address', 2],
+                                ['city', 'City'],
+                                ['state', 'State'],
+                                ['zip', 'ZIP Code']
+                            ].map(([key, placeholder, span = 1]) => (
+                                <div className={`w-full ${span === 2 ? 'md:col-span-2' : ''}`} key={key}>
+                                    <label className="block text-sm font-medium mb-1 capitalize">{placeholder}</label>
+                                    <input
+                                        name={key}
+                                        value={address[key]}
+                                        onChange={handleInputChange}
+                                        className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        placeholder={placeholder}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                        <p className="font-bold text-green-700">₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>
-                ))}
-                <div className="mt-4 font-bold text-right text-lg">
-                    Total: ₹{totalPrice.toFixed(2)} for {totalQuantity} items
+
+                    {/* Payment Method */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h2 className="text-xl font-bold mb-4">💳 Payment Method</h2>
+                        <div className="space-y-2">
+                            {['COD', 'Online'].map((method) => (
+                                <label key={method} className="flex items-center gap-3">
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value={method}
+                                        checked={paymentMethod === method}
+                                        onChange={() => setPaymentMethod(method)}
+                                    />
+                                    <span className="text-sm">
+                                        {method === 'COD' ? 'Cash on Delivery' : 'Online Payment (Razorpay)'}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Confirm Button */}
+                    <div className="text-right">
+                        <button
+                            onClick={handleConfirmPayment}
+                            className="bg-green-600 hover:bg-green-700 transition text-white px-8 py-3 rounded-lg text-lg"
+                        >
+                            ✅ Confirm & Pay
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right: Order Summary */}
+                <div className="bg-white rounded-lg shadow p-6 sticky top-20 h-fit">
+                    <h2 className="text-xl font-bold mb-4">🧾 Order Summary</h2>
+                    {items.map(item => (
+                        <div key={item.productId} className="flex justify-between items-center py-2 border-b">
+                            <div>
+                                <p className="font-semibold">{item.name}</p>
+                                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                            </div>
+                            <p className="font-bold text-green-700">
+                                ₹{(item.price * item.quantity).toFixed(2)}
+                            </p>
+                        </div>
+                    ))}
+                    <div className="mt-4 text-right font-semibold">
+                        <p>Total Items: {totalQuantity}</p>
+                        <p className="text-xl mt-1 text-green-700">Total: ₹{totalPrice.toFixed(2)}</p>
+                    </div>
                 </div>
             </div>
+        </Layout>
 
-            {/* Address */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-bold mb-4">🏠 Shipping Address</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="fullName" placeholder="Full Name" className="border p-2 rounded" value={address.fullName} onChange={handleInputChange} />
-                    <input name="phone" placeholder="Phone" className="border p-2 rounded" value={address.phone} onChange={handleInputChange} />
-                    <input name="addressLine" placeholder="Address" className="border p-2 rounded col-span-2" value={address.addressLine} onChange={handleInputChange} />
-                    <input name="city" placeholder="City" className="border p-2 rounded" value={address.city} onChange={handleInputChange} />
-                    <input name="state" placeholder="State" className="border p-2 rounded" value={address.state} onChange={handleInputChange} />
-                    <input name="zip" placeholder="ZIP" className="border p-2 rounded" value={address.zip} onChange={handleInputChange} />
-                </div>
-            </div>
-
-            {/* Payment Method */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-bold mb-4">💳 Payment Method</h2>
-                <div className="space-y-2">
-                    <label className="flex items-center gap-2">
-                        <input type="radio" name="payment" value="COD" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} />
-                        Cash on Delivery
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <input type="radio" name="payment" value="Online" checked={paymentMethod === 'Online'} onChange={() => setPaymentMethod('Online')} />
-                        Online Payment (Razorpay)
-                    </label>
-                </div>
-            </div>
-
-            {/* Confirm Button */}
-            <div className="text-center">
-                <button
-                    onClick={handleConfirmPayment}
-                    className="bg-green-600 text-white px-8 py-4 text-lg rounded-lg hover:bg-green-700 transition"
-                >
-                    ✅ Confirm & Pay
-                </button>
-            </div>
-        </div>
     );
 }
 

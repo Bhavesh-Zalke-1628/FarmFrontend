@@ -46,6 +46,8 @@ export const verifyOrderPayment = createAsyncThunk("orderPayment/verify", async 
 export const cashOrder = createAsyncThunk("orderPayment/cashOrder", async (data, { rejectWithValue }) => {
     try {
         const res = await axiosInstance.post("/order/cash-order", { amount: data });
+
+        console.log(res)
         return res.data;
 
     } catch (error) {
