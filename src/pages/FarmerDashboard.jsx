@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import ShowStore from '../Component/Store/ShowStore'
 import DashboardOverview from "./DashboardOverview";
 import Profile from "./Profile";
+import OrdersPage from "./OrderPage";
 
 function FarmerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,6 +27,7 @@ function FarmerDashboard() {
     const cartItems = useSelector((state) => state.cart.items);
 
     const handleTabChange = (tab) => {
+        console.log(tab)
         setActiveTab(tab);
         localStorage.setItem("farmerActiveTab", tab);
         setSidebarOpen(false);
@@ -71,6 +73,8 @@ function FarmerDashboard() {
                 return <CropManagement />;
             case "earnings":
                 return <EarningsReport />;
+            case "order":
+                return <OrdersPage />;
             case "profile":
                 return <ProfilePage />;
             default:
@@ -109,61 +113,15 @@ function FarmerDashboard() {
         </div>
     );
 
+
+
+
     const ProfilePage = () => (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <User size={24} /> My Profile
             </h1>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                {/* <div className="flex flex-col md:flex-row gap-8">
-                    <div className="md:w-1/3">
-                        <div className="flex flex-col items-center">
-                            <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                                <User size={48} className="text-gray-400" />
-                            </div>
-                            <h2 className="text-xl font-bold">{userData?.fullName || "User"}</h2>
-                            <p className="text-gray-500">{userData?.email || "user@example.com"}</p>
-                        </div>
-                    </div>
-                    <div className="md:w-2/3">
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="font-medium text-gray-700">Personal Information</h3>
-                                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm text-gray-500">Full Name</label>
-                                        <p className="mt-1">{userData?.fullName || "Not provided"}</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-500">Email</label>
-                                        <p className="mt-1">{userData?.email || "Not provided"}</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-500">Phone</label>
-                                        <p className="mt-1">{userData?.mobileNumber || "Not provided"}</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-500">Account Type</label>
-                                        <p className="mt-1 capitalize">{userData?.role || "farmer"}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-gray-700">Farm Information</h3>
-                                <div className="mt-2 space-y-2">
-                                    <p className="text-gray-600">Farm Name: {userData?.farmName || "Not provided"}</p>
-                                    <p className="text-gray-600">Location: {userData?.location || "Not provided"}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => { }} // Add edit functionality
-                                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                            >
-                                Edit Profile
-                            </button>
-                        </div>
-                    </div>
-                </div> */}
                 <Profile />
             </div>
         </div>
@@ -248,6 +206,12 @@ function FarmerDashboard() {
                                 label="Earnings"
                                 active={activeTab === "earnings"}
                                 onClick={() => handleTabChange("earnings")}
+                            />
+                            <NavItem
+                                icon={<DollarSign size={18} />}
+                                label="Orders"
+                                active={activeTab === "order"}
+                                onClick={() => handleTabChange("order")}
                             />
                         </ul>
                     </div>
