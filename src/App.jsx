@@ -21,6 +21,7 @@ const ProtectedRoute = ({ isAllowed, children }) => {
 };
 
 function App() {
+
     const { isLoggedIn } = useSelector((state) => state.auth);
 
     return (

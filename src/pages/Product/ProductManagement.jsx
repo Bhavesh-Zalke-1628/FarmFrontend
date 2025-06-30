@@ -156,7 +156,9 @@ const ProductManagementPage = () => {
                     <main className="flex-1">
                         {currentProducts.length > 0 ? (
                             <>
-                                <ProductCard products={currentProducts} />
+                                <ProductCard
+                                    products={currentProducts}
+                                />
                                 {totalPages > 1 && (
                                     <div className="mt-6">
                                         <Pagination

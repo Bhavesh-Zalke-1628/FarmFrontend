@@ -320,16 +320,6 @@ function ProductDetailsPage() {
                 product.price
         }));
 
-        Swal.fire({
-            position: 'center',
-            icon: 'success',
-            title: 'Added to cart!',
-            showConfirmButton: false,
-            timer: 1000,
-            customClass: {
-                popup: 'swal-added-to-cart'
-            }
-        });
     };
 
     const renderStars = (rating) => {

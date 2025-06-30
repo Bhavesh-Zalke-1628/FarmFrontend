@@ -58,13 +58,7 @@ function AllProduct() {
             quantity: 1
         }));
 
-        Swal.fire({
-            position: 'center',
-            icon: 'success',
-            title: 'Added to cart!',
-            showConfirmButton: false,
-            timer: 800,
-        });
+       
     };
 
     return (

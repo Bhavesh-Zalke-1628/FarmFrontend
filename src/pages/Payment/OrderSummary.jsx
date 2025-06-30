@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaShoppingCart, FaBox, FaCreditCard, FaMoneyBillWave } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
 import Layout from '../../Layout/Layout';
@@ -11,17 +11,20 @@ function OrderSummary() {
         address,
         items,
         totalPrice,
+        netPrice,
         totalDiscount,
-        tax,
-        finalPrice,
         totalQuantity,
         paymentMethod,
         paymentId,
-        razorpayOrderId
+        shippingFee,
+        razorpayOrderId,
+        grandTotal,
     } = state || {};
 
     console.log(state)
+    console.log(netPrice)
 
+    const navigate = useNavigate()
     if (!orderId) {
         return (
             <Layout>
@@ -89,7 +92,7 @@ function OrderSummary() {
                                     </h2>
                                     <div className="bg-gray-50 p-4 rounded-lg">
                                         <p className="font-medium">
-                                            {paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}
+                                            {paymentMethod === 'cash' ? 'Cash on Delivery' : 'Online Payment'}
                                         </p>
                                         {paymentMethod === 'Online' && (
                                             <p className="text-gray-600 mt-1">Status: Paid</p>
@@ -125,7 +128,7 @@ function OrderSummary() {
                                                     <p className="text-gray-600 text-sm">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right  ">
                                                 <p className="font-medium">
                                                     ₹{(item.price * item.quantity)}
                                                 </p>
@@ -155,13 +158,20 @@ function OrderSummary() {
                                         <span className="text-gray-600">Discounts</span>
                                         <span className="text-green-600">-₹{totalDiscount}</span>
                                     </div>
+
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Net Price </span>
+                                        <span className="font-medium">₹{netPrice}</span>
+
+                                    </div>
+
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Shipping</span>
-                                        <span className="font-medium">FREE</span>
+                                        <span className="font-medium">₹{shippingFee ? shippingFee : "Free"}</span>
                                     </div>
                                     <div className="flex justify-between border-t pt-3 mt-3">
                                         <span className="font-semibold text-gray-800">Total</span>
-                                        <span className="font-bold text-lg">₹{finalPrice}</span>
+                                        <span className="font-bold text-lg">₹{grandTotal}</span>
                                     </div>
                                 </div>
                             </div>

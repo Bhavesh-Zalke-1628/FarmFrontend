@@ -1,7 +1,10 @@
 import React from "react";
+import { addToCart } from "../../Redux/Slice/cartSlice";
+import { useDispatch } from "react-redux";
 
-const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
+const ProductCard = ({ products, handleProductClick }) => {
     const MAX_SCROLL_CARDS = 7;
+    const dispatch = useDispatch()
 
     // Sort: Offers first
     const sortedProducts = [...products].sort(
@@ -12,6 +15,15 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
         const discountedPrice = Math.round(
             product.price - (product.price * (product.offerPercentage || 0)) / 100
         );
+
+        const handleAddToCart = (product) => {
+
+            console.log(product._id)
+            if (product) {
+                dispatch(addToCart(product));
+            }
+        };
+
 
         const isOutOfStock = product.stock <= 0;
 
@@ -65,7 +77,7 @@ const ProductCard = ({ products, handleAddToCart, handleProductClick }) => {
                             }`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleAddToCart(e, product);
+                            handleAddToCart(product, 1);
                         }}
                         disabled={isOutOfStock}
                     >
