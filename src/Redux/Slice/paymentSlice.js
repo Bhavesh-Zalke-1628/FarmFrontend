@@ -12,154 +12,212 @@ const initialState = {
     status: "",
     isLoading: false,
     error: null,
+    paymentInitializing: false,
 };
 
 // ✅ Get Razorpay Key
-export const getRazorPayId = createAsyncThunk("razorpay/getId", async (_, { rejectWithValue }) => {
-    try {
-        const res = await axiosInstance.get("/payment/razorpay/getid");
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Failed to load Razorpay key");
+export const getRazorPayId = createAsyncThunk(
+    "razorpay/getId",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get("/payment/razorpay/getid");
+
+            console.log(data)
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to load Razorpay key"
+            );
+        }
     }
-});
+);
 
 // ✅ Subscribe to Plan
-export const purchaseCourseBundle = createAsyncThunk("razorpay/purchase", async (_, { rejectWithValue }) => {
-    try {
-        const res = await toast.promise(
-            (async () => await axiosInstance.post("/payment/razorpay/subscribe"))(),
-            {
-                pending: "Subscribing...",
-                success: "Subscription successful 🎉",
-                error: "Subscription failed ❌",
-            }
-        );
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Failed to subscribe");
+export const purchaseCourseBundle = createAsyncThunk(
+    "razorpay/purchase",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await toast.promise(
+                axiosInstance.post("/payment/razorpay/subscribe"),
+                {
+                    pending: "Subscribing to plan...",
+                    success: "Subscription successful 🎉",
+                    error: "Subscription failed ❌",
+                }
+            );
+            console.log(response.data)
+
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to complete subscription"
+            );
+        }
     }
-});
+);
 
 // ✅ Verify Razorpay Payment
-export const verifyUserPayment = createAsyncThunk("razorpay/verify", async (data, { rejectWithValue }) => {
-    try {
-        const res = await toast.promise(
-            (async () => await axiosInstance.post("/payment/razorpay/verify", data))(),
-            {
-                pending: "Verifying payment...",
-                success: "Payment verified ✅",
-                error: "Verification failed ❌",
-            }
-        );
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Verification error");
+export const verifyUserPayment = createAsyncThunk(
+    "razorpay/verify",
+    async (paymentData, { rejectWithValue }) => {
+        try {
+            const response = await toast.promise(
+                axiosInstance.post("/payment/razorpay/verify", paymentData),
+                {
+                    pending: "Verifying payment...",
+                    success: "Payment verified successfully ✅",
+                    error: "Payment verification failed ❌",
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Payment verification error"
+            );
+        }
     }
-});
+);
 
 // ✅ Get All Payment Records
-export const getPaymentRecord = createAsyncThunk("razorpay/record", async (_, { rejectWithValue }) => {
-    try {
-        const res = await axiosInstance.get("/payment/razorpay/all");
-        toast.success(res.data?.msg || "Payments loaded");
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Failed to fetch payments");
+export const getPaymentRecord = createAsyncThunk(
+    "razorpay/record",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get("/payment/razorpay/all");
+            toast.success(data?.message || "Payments loaded successfully");
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to fetch payment records"
+            );
+        }
     }
-});
+);
 
 // ✅ Cancel Subscription
-export const cancelCourseBundle = createAsyncThunk("razorpay/cancel", async (_, { rejectWithValue }) => {
-    try {
-        const res = await toast.promise(
-            (async () => await axiosInstance.post("/payment/unsubscribe"))(),
-            {
-                pending: "Unsubscribing...",
-                success: "Subscription cancelled ✅",
-                error: "Cancellation failed ❌",
-            }
-        );
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response?.data?.message || "Failed to cancel subscription");
+export const cancelCourseBundle = createAsyncThunk(
+    "razorpay/cancel",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await toast.promise(
+                axiosInstance.post("/payment/unsubscribe"),
+                {
+                    pending: "Cancelling subscription...",
+                    success: "Subscription cancelled successfully ✅",
+                    error: "Failed to cancel subscription ❌",
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Subscription cancellation failed"
+            );
+        }
     }
-});
+);
 
 const razorpaySlice = createSlice({
     name: "razorpay",
     initialState,
-    reducers: {},
+    reducers: {
+        resetPaymentState: (state) => {
+            state.key = "";
+            state.subscription_id = "";
+            state.isPaymentVerified = false;
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
+            // Get Razorpay Key
             .addCase(getRazorPayId.pending, (state) => {
-                state.isLoading = true;
+                state.paymentInitializing = true;
+                state.error = null;
             })
-            .addCase(getRazorPayId.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.key = action?.payload?.data?.key;
+            .addCase(getRazorPayId.fulfilled, (state, { payload }) => {
+                state.paymentInitializing = false;
+
+                console.log(payload)
+                state.key = payload?.data?.key || "";
             })
-            .addCase(getRazorPayId.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.payload;
-                toast.error(action.payload);
+            .addCase(getRazorPayId.rejected, (state, { payload }) => {
+                state.paymentInitializing = false;
+                state.error = payload;
+                toast.error(payload);
             })
 
+            // Purchase Course Bundle
             .addCase(purchaseCourseBundle.pending, (state) => {
                 state.isLoading = true;
+                state.error = null;
             })
-            .addCase(purchaseCourseBundle.fulfilled, (state, action) => {
+            .addCase(purchaseCourseBundle.fulfilled, (state, { payload }) => {
                 state.isLoading = false;
-                state.subscription_id = action.payload?.data?.subscription_id;
+                state.subscription_id = payload?.subscription_id || "";
             })
-            .addCase(purchaseCourseBundle.rejected, (state, action) => {
+            .addCase(purchaseCourseBundle.rejected, (state, { payload }) => {
                 state.isLoading = false;
-                state.error = action.payload;
-                toast.error(action.payload);
+                state.error = payload;
+                toast.error(payload);
             })
 
+            // Verify User Payment
             .addCase(verifyUserPayment.pending, (state) => {
                 state.isLoading = true;
+                state.error = null;
             })
-            .addCase(verifyUserPayment.fulfilled, (state, action) => {
+            .addCase(verifyUserPayment.fulfilled, (state, { payload }) => {
                 state.isLoading = false;
-                state.isPaymentVerified = action.payload?.success;
-                state.status = action.payload?.store?.subscription?.status || "";
+                state.isPaymentVerified = payload?.success || false;
+                state.status = payload?.store?.subscription?.status || "";
             })
-            .addCase(verifyUserPayment.rejected, (state, action) => {
+            .addCase(verifyUserPayment.rejected, (state, { payload }) => {
                 state.isLoading = false;
                 state.isPaymentVerified = false;
-                state.error = action.payload;
-                toast.error(action.payload);
+                state.error = payload;
+                toast.error(payload);
             })
 
+            // Get Payment Record
             .addCase(getPaymentRecord.pending, (state) => {
                 state.isLoading = true;
+                state.error = null;
             })
-            .addCase(getPaymentRecord.fulfilled, (state, action) => {
+            .addCase(getPaymentRecord.fulfilled, (state, { payload }) => {
                 state.isLoading = false;
-                state.allPayments = action.payload?.allPayments || {};
-                state.finalMonths = action.payload?.finalMonths || {};
-                state.monthlySalesRecord = action.payload?.monthlySalesRecord || [];
+                state.allPayments = payload?.allPayments || {};
+                state.finalMonths = payload?.finalMonths || {};
+                state.monthlySalesRecord = payload?.monthlySalesRecord || [];
             })
-            .addCase(getPaymentRecord.rejected, (state, action) => {
+            .addCase(getPaymentRecord.rejected, (state, { payload }) => {
                 state.isLoading = false;
-                state.error = action.payload;
-                toast.error(action.payload);
+                state.error = payload;
+                toast.error(payload);
             })
 
+            // Cancel Course Bundle
             .addCase(cancelCourseBundle.pending, (state) => {
                 state.isLoading = true;
+                state.error = null;
             })
             .addCase(cancelCourseBundle.fulfilled, (state) => {
                 state.isLoading = false;
+                state.subscription_id = "";
+                state.isPaymentVerified = false;
+                state.status = "cancelled";
             })
-            .addCase(cancelCourseBundle.rejected, (state, action) => {
+            .addCase(cancelCourseBundle.rejected, (state, { payload }) => {
                 state.isLoading = false;
-                state.error = action.payload;
-                toast.error(action.payload);
+                state.error = payload;
+                toast.error(payload);
             });
     },
 });
 
+export const { resetPaymentState } = razorpaySlice.actions;
 export default razorpaySlice.reducer;

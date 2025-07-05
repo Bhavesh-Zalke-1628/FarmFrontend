@@ -20,14 +20,7 @@ export const getStoreDetails = createAsyncThunk(
         }
 
         try {
-            const res = await toast.promise(
-                axiosInstance.get(`/store/get-store/${id}`),
-                {
-                    pending: "Fetching store data...",
-                    success: "Store data fetched ✅",
-                    error: "Failed to fetch store data ❌",
-                }
-            );
+            const res = await axiosInstance.get(`/store/get-store/${id}`)
             return res.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || "Server Error");

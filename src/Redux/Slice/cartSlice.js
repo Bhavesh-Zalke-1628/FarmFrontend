@@ -99,7 +99,6 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async (_, { rejectWi
 export const addToCart = createAsyncThunk("cart/addToCart", async (product, { rejectWithValue }) => {
 
     try {
-        console.log(product)
         const res = await toast.promise(
             axiosInstance.post("/cart/add", product),
             {

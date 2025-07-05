@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { addToCart } from "../../Redux/Slice/cartSlice";
 import { useDispatch } from "react-redux";
+import { FaSpinner } from "react-icons/fa";
 
 const ProductCard = ({ products, handleProductClick }) => {
     const MAX_SCROLL_CARDS = 7;
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     // Sort: Offers first
     const sortedProducts = [...products].sort(
@@ -15,15 +16,14 @@ const ProductCard = ({ products, handleProductClick }) => {
         const discountedPrice = Math.round(
             product.price - (product.price * (product.offerPercentage || 0)) / 100
         );
+        const [imageLoaded, setImageLoaded] = useState(false);
+        const [imageError, setImageError] = useState(false);
 
         const handleAddToCart = (product) => {
-
-            console.log(product._id)
             if (product) {
                 dispatch(addToCart(product));
             }
         };
-
 
         const isOutOfStock = product.stock <= 0;
 
@@ -33,13 +33,32 @@ const ProductCard = ({ products, handleProductClick }) => {
                 className="min-w-[240px] sm:min-w-0 border rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300 bg-white cursor-pointer"
                 onClick={() => handleProductClick(product)}
             >
-                <div className="h-48 overflow-hidden bg-gray-100 flex justify-center items-center">
+                <div className="h-48 overflow-hidden bg-gray-100 flex justify-center items-center relative">
                     {product?.img?.secure_url ? (
-                        <img
-                            src={product.img.secure_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                        />
+                        <>
+                            {/* Loading Spinner */}
+                            {!imageLoaded && !imageError && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <FaSpinner className="animate-spin text-green-500 text-2xl" />
+                                </div>
+                            )}
+
+                            {/* Error Fallback */}
+                            {imageError && (
+                                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                                    Image not available
+                                </div>
+                            )}
+
+                            {/* Product Image */}
+                            <img
+                                src={product.img.secure_url}
+                                alt={product.name}
+                                className={`w-full h-full object-cover hover:scale-105 transition duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={() => setImageError(true)}
+                            />
+                        </>
                     ) : (
                         <div className="text-gray-400">No Image</div>
                     )}
@@ -77,7 +96,7 @@ const ProductCard = ({ products, handleProductClick }) => {
                             }`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleAddToCart(product, 1);
+                            handleAddToCart(product);
                         }}
                         disabled={isOutOfStock}
                     >

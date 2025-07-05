@@ -44,10 +44,8 @@ function Cart() {
 
     // Memoized handlers to prevent unnecessary recreations
     const handleIncrement = useCallback(async (productId) => {
-        console.log(productId)
-        console.log(items)
+
         const item = items.find(i => i.productId === productId);
-        console.log(item)
         try {
             if (isLoggedIn) {
                 await dispatch(updateCartItemQuantity({
@@ -64,11 +62,9 @@ function Cart() {
     }, [dispatch, isLoggedIn]);
 
     const handleDecrement = useCallback(async (productId) => {
-        console.log(productId)
 
         try {
             const item = items.find(i => i.productId === productId);
-            console.log(item)
             if (!item) return;
 
             if (item.quantity <= 1) {

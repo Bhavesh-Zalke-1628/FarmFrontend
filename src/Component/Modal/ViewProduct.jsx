@@ -8,7 +8,6 @@ function ViewProduct({ productId, onClose }) {
     const { product, loading, error } = useSelector(state => state.products);
     const cartCount = useSelector(state => state.cart.count);
     const [quantity, setQuantity] = useState(1);
-    console.log(product)
 
     useEffect(() => {
         if (productId) {

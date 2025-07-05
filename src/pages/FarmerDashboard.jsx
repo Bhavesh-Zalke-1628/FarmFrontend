@@ -27,7 +27,6 @@ function FarmerDashboard() {
     const cartItems = useSelector((state) => state.cart.items);
 
     const handleTabChange = (tab) => {
-        console.log(tab)
         setActiveTab(tab);
         localStorage.setItem("farmerActiveTab", tab);
         setSidebarOpen(false);

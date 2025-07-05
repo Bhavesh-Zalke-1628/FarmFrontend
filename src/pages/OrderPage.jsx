@@ -17,7 +17,6 @@ const OrdersPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { role, data } = useSelector(state => state?.auth)
-console.log(data)
     useEffect(() => {
         dispatch(getAllOrderDetails())
     }, [dispatch]);

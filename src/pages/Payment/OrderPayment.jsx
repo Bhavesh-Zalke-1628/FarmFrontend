@@ -46,7 +46,7 @@ const AddressForm = ({
                 ['addressLine', 'Street Address', 'text', true, '', 2],
                 ['city', 'City', 'text', true],
                 ['state', 'State/Province', 'text', true],
-                ['zip', 'ZIP/Postal cashe', 'text', true, 'Must be 6 digits'],
+                ['zip', 'ZIP/Postal Code', 'text', true, 'Must be 6 digits'],
                 ['country', 'Country', 'text', false, '', 2]
             ].map(([key, placeholder, type, required, errorMessage, span]) => (
                 <motion.div
@@ -223,11 +223,12 @@ function OrderPayment() {
     const cart = useSelector(state => state.cart);
     const razorpayKey = useSelector(state => state?.order?.key);
 
-    console.log(razorpayKey)
+    console.log("razorpayKey", razorpayKey);
 
     const [loading, setLoading] = useState(false);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
+    const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
     const {
         items = [],
@@ -239,11 +240,6 @@ function OrderPayment() {
         totalPrice = 0
     } = state || cart;
 
-
-    console.log(state)
-
-
-    console.log(grandTotal)
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [address, setAddress] = useState({
         fullName: '',
@@ -265,10 +261,13 @@ function OrderPayment() {
     });
 
     useEffect(() => {
+        // Load saved address if exists
         const savedAddress = localStorage.getItem('savedAddress');
         if (savedAddress) {
             setAddress(JSON.parse(savedAddress));
         }
+        // Cleanup if needed
+
     }, [dispatch]);
 
     const handleInputChange = (e) => {
@@ -291,17 +290,17 @@ function OrderPayment() {
         return !Object.values(newErrors).some(error => error);
     };
 
-    const saveAddressToLocalStorage = () => {
-        localStorage.setItem('savedAddress', JSON.stringify(address));
-    };
+    // const saveAddressToLocalStorage = () => {
+    //     localStorage.setItem('savedAddress', JSON.stringify(address));
+    // };
 
-    const handlecashPayment = async () => {
+    const handleCashPayment = async () => {
         try {
             setLoading(true);
             const res = await dispatch(cashOrder(grandTotal));
 
             if (res?.payload?.success) {
-                saveAddressToLocalStorage();
+                // saveAddressToLocalStorage();
                 setActiveStep(3);
 
                 await Swal.fire({
@@ -330,13 +329,13 @@ function OrderPayment() {
                     }
                 });
             } else {
-                throw new Error(res?.payload?.message || 'cash order failed');
+                throw new Error(res?.payload?.message || 'Cash order failed');
             }
         } catch (error) {
             console.error(error);
             Swal.fire({
                 title: 'Error',
-                text: error.message || 'Something went wrong during cash',
+                text: error.message || 'Something went wrong during cash payment',
                 icon: 'error',
                 confirmButtonText: 'OK',
                 customClass: {
@@ -350,141 +349,181 @@ function OrderPayment() {
 
     const handleOnlinePayment = async () => {
         try {
+            // Check if Razorpay is ready
+            // if (!razorpayLoaded) {
+            //     Swal.fire({
+            //         title: 'Loading Payment Gateway',
+            //         text: 'Please wait while we prepare the payment system',
+            //         icon: 'info',
+            //         showConfirmButton: false,
+            //         allowOutsideClick: false
+            //     });
+            //     return;
+            // }
+
+            // Fetch Razorpay key if not available
+            if (!razorpayKey) {
+                setPaymentProcessing(true);
+                const keyResult = await dispatch(getRazorpayKey());
+
+                console.log(keyResult)
+                if (!keyResult.payload?.data?.key) {
+                    throw new Error('Failed to initialize payment gateway');
+                }
+            }
+
             setPaymentProcessing(true);
 
-            const keyRes = await dispatch(getRazorpayKey());
-            console.log(keyRes)
-            if (!keyRes?.payload?.success) throw new Error('Failed to get payment key');
-
-            console.log(razorpayKey)
-
-            let price = grandTotal.tofixed(2)
-            const orderRes = await dispatch(createRazorpayOrder(price));
-            console.log("orderRes", orderRes)
+            // Create Razorpay order
+            const orderRes = await dispatch(createRazorpayOrder(grandTotal));
             const { orderId, razorpayOrderId, amount, currency } = orderRes?.payload || {};
 
-            if (!razorpayOrderId) throw new Error('Payment gateway error');
+            console.log(orderRes);
 
-            console.log(
-                orderId, razorpayOrderId, amount, currency
-            )
+            if (!razorpayOrderId) {
+                throw new Error('Failed to create payment order. Please try again.');
+            }
 
-            console.log("razorpayKey", razorpayKey)
-
+            // Prepare payment options
             const options = {
                 key: razorpayKey,
-                amount,
+                amount: amount.toString(),
                 currency,
                 name: 'GreenFields Farm',
                 description: `Order #${orderId}`,
                 order_id: razorpayOrderId,
                 handler: async (response) => {
                     try {
-                        const result = await dispatch(verifyOrderPayment({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            orderId,
-                            amount
-                        }));
+                        const verificationResult = await dispatch(
+                            verifyOrderPayment({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderId,
+                                amount
+                            })
+                        );
 
-                        console.log("result", result)
 
-                        if (result?.payload?.success) {
-                            saveAddressToLocalStorage();
-                            setActiveStep(3);
+                        console.log("F", verificationResult);
 
-                            await Swal.fire({
-                                title: 'Payment Successful!',
-                                text: `Order ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}`,
-                                icon: 'success',
-                                confirmButtonText: 'View Order',
-                                customClass: {
-                                    confirmButton: 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition'
-                                }
-                            });
-
-                            dispatch(clearCart());
-                            navigate('/order-summary', {
-                                state: {
-                                    orderId,
-                                    address,
-                                    items,
-                                    totalPrice,
-                                    totalDiscount,
-                                    shippingFee,
-                                    grandTotal,
-                                    totalQuantity,
-                                    netPrice,
-                                    paymentId: response.razorpay_payment_id,
-                                    razorpayOrderId: response.razorpay_order_id,
-                                    paymentMethod: 'online'
-                                }
-                            });
-                        } else {
+                        if (!verificationResult?.payload?.success) {
                             throw new Error('Payment verification failed');
                         }
-                    } catch (err) {
-                        console.error('Payment verification failed', err);
-                        Swal.fire({
-                            title: 'Payment Verification Failed',
-                            text: 'Please contact support with your order details',
-                            icon: 'error',
-                            confirmButtonText: 'OK',
+
+                        // Payment successful
+                        saveAddressToLocalStorage();
+                        dispatch(clearCart());
+
+                        await Swal.fire({
+                            title: 'Payment Successful!',
+                            html: `
+                    <div class="text-left">
+                      <p class="mb-2">Order ID: <strong>${orderId}</strong></p>
+                      <p>Payment ID: <strong>${response.razorpay_payment_id}</strong></p>
+                    </div>
+                  `,
+                            icon: 'success',
+                            confirmButtonText: 'View Order Details',
                             customClass: {
-                                confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition'
+                                confirmButton: 'bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition'
                             }
+                        });
+
+                        navigate('/order-summary', {
+                            state: {
+                                orderId,
+                                address,
+                                items,
+                                totalPrice,
+                                totalDiscount,
+                                shippingFee,
+                                grandTotal,
+                                totalQuantity,
+                                netPrice,
+                                paymentId: response.razorpay_payment_id,
+                                razorpayOrderId: response.razorpay_order_id,
+                                paymentMethod: 'online'
+                            }
+                        });
+
+                    } catch (verificationError) {
+                        console.error('Payment verification failed:', verificationError);
+                        Swal.fire({
+                            title: 'Verification Failed',
+                            text: 'Your payment was successful but verification failed. Please contact support with your payment details.',
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
                         });
                     } finally {
                         setPaymentProcessing(false);
                     }
                 },
                 prefill: {
-                    name: address.fullName,
+                    name: address.fullName || '',
                     email: 'customer@example.com',
-                    contact: address.phone
+                    contact: address.phone || ''
                 },
                 notes: {
-                    address: `${address.addressLine}, ${address.city}, ${address.state}, ${address.zip}`
+                    address: `${address.addressLine || ''}, ${address.city || ''}, ${address.state || ''}, ${address.zip || ''}`
                 },
                 theme: { color: '#10b981' },
                 modal: {
-                    ondismiss: () => {
+                    ondismiss: async () => {
                         setPaymentProcessing(false);
-                        Swal.fire({
-                            title: 'Payment Cancelled',
-                            text: 'You can complete your payment later',
+                        const { isConfirmed } = await Swal.fire({
+                            title: 'Payment Incomplete',
+                            text: 'You can complete your payment from your orders page',
                             icon: 'info',
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition'
-                            }
+                            showCancelButton: true,
+                            confirmButtonText: 'Go to Orders',
+                            cancelButtonText: 'Continue Shopping'
                         });
+
+                        if (isConfirmed) {
+                            navigate('/orders');
+                        }
                     }
                 }
             };
 
+            // Validate options before opening
+            if (!options.key || !options.order_id) {
+                throw new Error('Payment configuration error');
+            }
+
+            // Open payment modal
             const rzp = new window.Razorpay(options);
             rzp.open();
-        } catch (err) {
-            console.error('online payment error:', err);
+
+            // Handle payment window close
+            rzp.on('payment.failed', (response) => {
+                console.error('Payment failed:', response.error);
+                Swal.fire({
+                    title: 'Payment Failed',
+                    html: `
+                <div class="text-left">
+                  <p class="mb-2">Error: <strong>${response.error.description || 'Unknown error'}</strong></p>
+                  <p>Order ID: <strong>${orderId}</strong></p>
+                </div>
+              `,
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+                setPaymentProcessing(false);
+            });
+
+        } catch (error) {
+            console.error('Payment processing error:', error);
             Swal.fire({
                 title: 'Payment Error',
-                text: err.message || 'Something went wrong with online payment',
+                text: error.message || 'Failed to process payment. Please try again.',
                 icon: 'error',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition'
-                }
+                confirmButtonText: 'OK'
             });
             setPaymentProcessing(false);
         }
     };
-
-
-    console.log(netPrice)
-
-
 
     const handleConfirmPayment = async () => {
         if (!validateAddress()) {
@@ -492,18 +531,14 @@ function OrderPayment() {
                 title: 'Incomplete Address',
                 text: 'Please fill all address fields correctly',
                 icon: 'warning',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition'
-                }
+                confirmButtonText: 'OK'
             });
             return;
         }
 
         if (paymentMethod === 'cash') {
-            await handlecashPayment();
+            await handleCashPayment();
         } else {
-            console.log("online paymenet")
             await handleOnlinePayment();
         }
     };
@@ -514,10 +549,7 @@ function OrderPayment() {
                 title: 'Incomplete Address',
                 text: 'Please fill all address fields correctly',
                 icon: 'warning',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition'
-                }
+                confirmButtonText: 'OK'
             });
             return;
         }
@@ -554,7 +586,7 @@ function OrderPayment() {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto">
                     {/* Back Button */}
                     <div className="flex items-center mb-8">
@@ -635,6 +667,15 @@ function OrderPayment() {
                                 transition={{ delay: 0.2 }}
                                 className="sticky top-8"
                             >
+                                <OrderSummary
+                                    items={items}
+                                    totalPrice={totalPrice}
+                                    totalDiscount={totalDiscount}
+                                    shippingFee={shippingFee}
+                                    grandTotal={grandTotal}
+                                    netPrice={netPrice}
+                                />
+
                                 {activeStep === 1 && address.addressLine && (
                                     <motion.div
                                         initial={{ opacity: 0 }}
@@ -654,19 +695,7 @@ function OrderPayment() {
                                         </div>
                                     </motion.div>
                                 )}
-
                             </motion.div>
-                            <div className="w-full">
-                                <OrderSummary
-                                    totalQuantity={totalQuantity}
-                                    totalPrice={totalPrice}
-                                    totalDiscount={totalDiscount}
-                                    shippingFee={shippingFee}
-                                    grandTotal={grandTotal}
-                                    netPrice={netPrice}
-                                />
-                            </div>
-
                         </div>
                     </div>
                 </div>

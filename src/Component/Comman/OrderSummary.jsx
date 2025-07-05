@@ -96,6 +96,8 @@ const OrderSummary = ({
 }) => {
     const itemText = totalQuantity === 1 ? 'item' : 'items';
 
+
+
     return (
         <div className=" mt-3 w-fit">
             <motion.div
@@ -128,7 +130,7 @@ const OrderSummary = ({
                     {/* Net Price */}
                     <div className="flex justify-between">
                         <span className="text-gray-600">Net Price</span>
-                        <span className="font-medium">₹{netPrice.toLocaleString()}</span>
+                        <span className="font-medium">₹{netPrice}</span>
                     </div>
 
                     {/* Delivery */}
@@ -155,7 +157,7 @@ const OrderSummary = ({
                     </div>
                 </div>
 
-                {showCheckoutButton && (
+                {!onCheckout || showCheckoutButton && (
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
