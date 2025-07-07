@@ -22,7 +22,6 @@ export const getRazorPayId = createAsyncThunk(
         try {
             const { data } = await axiosInstance.get("/payment/razorpay/getid");
 
-            console.log(data)
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -46,7 +45,6 @@ export const purchaseCourseBundle = createAsyncThunk(
                     error: "Subscription failed ❌",
                 }
             );
-            console.log(response.data)
 
             return response.data;
         } catch (error) {
@@ -141,8 +139,6 @@ const razorpaySlice = createSlice({
             })
             .addCase(getRazorPayId.fulfilled, (state, { payload }) => {
                 state.paymentInitializing = false;
-
-                console.log(payload)
                 state.key = payload?.data?.key || "";
             })
             .addCase(getRazorPayId.rejected, (state, { payload }) => {

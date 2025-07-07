@@ -261,7 +261,6 @@ const StoreFormModal = ({ open, handleClose }) => {
         // Get Razorpay credentials
         const razorpayAction = await dispatch(getRazorPayId());
 
-        console.log("razorpayAction", razorpayAction);
 
         if (!razorpayAction.payload?.data?.key) {
             throw new Error("Failed to initialize payment gateway");
@@ -270,7 +269,6 @@ const StoreFormModal = ({ open, handleClose }) => {
         // Create subscription
         const subscriptionAction = await dispatch(purchaseCourseBundle());
 
-        console.log("subscriptionAction", subscriptionAction);
 
         if (!subscriptionAction.payload?.data?.subscription_id) {
             throw new Error("Failed to create subscription plan");
@@ -304,8 +302,6 @@ const StoreFormModal = ({ open, handleClose }) => {
 
             // Initialize payment gateway
             const { razorpayKey, subscriptionId } = await initializePayment();
-
-            console.log(razorpayKey, subscriptionId);
 
             const options = {
                 key: razorpayKey,

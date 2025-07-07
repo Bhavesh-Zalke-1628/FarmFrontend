@@ -223,7 +223,6 @@ function OrderPayment() {
     const cart = useSelector(state => state.cart);
     const razorpayKey = useSelector(state => state?.order?.key);
 
-    console.log("razorpayKey", razorpayKey);
 
     const [loading, setLoading] = useState(false);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
@@ -290,9 +289,9 @@ function OrderPayment() {
         return !Object.values(newErrors).some(error => error);
     };
 
-    // const saveAddressToLocalStorage = () => {
-    //     localStorage.setItem('savedAddress', JSON.stringify(address));
-    // };
+    const saveAddressToLocalStorage = () => {
+        localStorage.setItem('savedAddress', JSON.stringify(address));
+    };
 
     const handleCashPayment = async () => {
         try {
@@ -366,7 +365,6 @@ function OrderPayment() {
                 setPaymentProcessing(true);
                 const keyResult = await dispatch(getRazorpayKey());
 
-                console.log(keyResult)
                 if (!keyResult.payload?.data?.key) {
                     throw new Error('Failed to initialize payment gateway');
                 }
@@ -378,7 +376,6 @@ function OrderPayment() {
             const orderRes = await dispatch(createRazorpayOrder(grandTotal));
             const { orderId, razorpayOrderId, amount, currency } = orderRes?.payload || {};
 
-            console.log(orderRes);
 
             if (!razorpayOrderId) {
                 throw new Error('Failed to create payment order. Please try again.');
@@ -405,7 +402,6 @@ function OrderPayment() {
                         );
 
 
-                        console.log("F", verificationResult);
 
                         if (!verificationResult?.payload?.success) {
                             throw new Error('Payment verification failed');

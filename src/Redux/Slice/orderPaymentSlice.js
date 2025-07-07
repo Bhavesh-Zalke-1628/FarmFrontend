@@ -16,7 +16,6 @@ export const getRazorpayKey = createAsyncThunk("orderPayment/key", async (_, { r
     try {
         const res = await axiosInstance.get("/order/razorpay/getid");
 
-        console.log(res.data);
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Failed to get key");
@@ -25,7 +24,6 @@ export const getRazorpayKey = createAsyncThunk("orderPayment/key", async (_, { r
 
 // 2️⃣ Create Razorpay Order
 export const createRazorpayOrder = createAsyncThunk("orderPayment/createOrder", async (amount, { rejectWithValue }) => {
-    console.log("Creating Razorpay order with amount:", amount);
     try {
 
         const res = await axiosInstance.post("/order/razorpay/order", { amount });
@@ -66,8 +64,6 @@ const orderPaymentSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getRazorpayKey.fulfilled, (state, action) => {
-
-                console.log(action?.payload?.data?.key);
                 state.key = action?.payload?.data?.key;
             })
             .addCase(createRazorpayOrder.pending, (state) => {

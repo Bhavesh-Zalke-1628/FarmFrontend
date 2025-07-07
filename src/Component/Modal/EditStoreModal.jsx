@@ -55,7 +55,6 @@ const EditStoreModal = ({ open, handleClose, initialData = {} }) => {
     };
 
     const handleUpdate = async () => {
-        console.log("update store data", formData);
         try {
             const res = await dispatch(updateStore({ id: initialData._id, data: formData })).unwrap();
             if (res.success) {
