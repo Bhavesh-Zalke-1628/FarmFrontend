@@ -14,6 +14,7 @@ import ThankYou from './Component/Comman/ThankYou';
 import OrderSummary from './pages/Payment/OrderSummary';
 import SignIn from './pages/SignIn';
 import ProductDetailsPage from './pages/Product/ProductDetailsPage';
+import About from './Component/About';
 
 // Reusable wrapper for protected routes
 const ProtectedRoute = ({ isAllowed, children }) => {
@@ -86,6 +87,7 @@ function App() {
             />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path='/order-summary' element={<OrderSummary />} />
+            <Route path="/about" element={<About />} />
 
         </Routes>
     );
