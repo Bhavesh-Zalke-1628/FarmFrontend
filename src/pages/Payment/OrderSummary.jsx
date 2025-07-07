@@ -13,14 +13,12 @@ import {
 import { MdLocationOn } from 'react-icons/md';
 import Layout from '../../Layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearCurrentOrder } from '../../Redux/Slice/orderDetailsSlice';
 
 function OrderSummary() {
     const { state } = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const { currentOrder } = useSelector((state) => state.orderDetails);
 
     useEffect(() => {
         return () => {
