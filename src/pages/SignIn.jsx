@@ -72,7 +72,7 @@ function SignIn() {
             }
 
             if (res.success) {
-                navigate(res.redirectTo || '/profile');
+                navigate(res.redirectTo || '/');
             } else {
                 setErrors({ apiError: res.message || 'Authentication failed' });
             }

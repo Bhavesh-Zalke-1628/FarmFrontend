@@ -1,4 +1,5 @@
-import React from 'react';
+// src/pages/OrderSummary.js
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     FaCheckCircle,
@@ -11,10 +12,21 @@ import {
 } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
 import Layout from '../../Layout/Layout';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearCurrentOrder } from '../../Redux/Slice/orderDetailsSlice';
 
 function OrderSummary() {
     const { state } = useLocation();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { currentOrder } = useSelector((state) => state.orderDetails);
+
+    useEffect(() => {
+        return () => {
+            dispatch(clearCurrentOrder());
+        };
+    }, [dispatch]);
 
     const {
         orderId,
@@ -31,7 +43,6 @@ function OrderSummary() {
         grandTotal = 0,
     } = state || {};
 
-    // Handle missing order ID
     if (!orderId) {
         return (
             <Layout>
@@ -57,22 +68,19 @@ function OrderSummary() {
         );
     }
 
-    // Format currency
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: 'INR',
             maximumFractionDigits: 0
-        }).format(amount).replace('₹', '₹');
+        }).format(amount);
     };
 
     return (
         <Layout>
             <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 print:py-0 print:px-0">
                 <div className="max-w-4xl mx-auto print:max-w-full">
-                    {/* Printable area */}
                     <div className="bg-white rounded-lg shadow-md overflow-hidden print:shadow-none print:rounded-none">
-                        {/* Order Confirmation Header */}
                         <div className="bg-green-50 p-6 text-center border-b border-green-100 print:p-4">
                             <div className="flex justify-center mb-4">
                                 <div className="bg-green-100 p-3 rounded-full">
@@ -96,10 +104,8 @@ function OrderSummary() {
                             </div>
                         </div>
 
-                        {/* Order Details */}
                         <div className="p-6 print:p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-4">
-                                {/* Shipping Information */}
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                                         <MdLocationOn className="text-green-500 mr-2" />
@@ -116,7 +122,6 @@ function OrderSummary() {
                                     </div>
                                 </div>
 
-                                {/* Payment Information */}
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                                         {paymentMethod === 'cash' ? (
@@ -142,7 +147,6 @@ function OrderSummary() {
                                 </div>
                             </div>
 
-                            {/* Order Items */}
                             <div className="mt-8 print:mt-4">
                                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                                     <FaShoppingCart className="text-green-500 mr-2" />
@@ -150,17 +154,13 @@ function OrderSummary() {
                                 </h2>
                                 <div className="border rounded-lg divide-y divide-gray-200 print:border-0">
                                     {items.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="p-4 flex justify-between items-center print:p-2"
-                                        >
+                                        <div key={index} className="p-4 flex justify-between items-center print:p-2">
                                             <div className="flex items-center">
                                                 <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden mr-4 print:w-12 print:h-12">
                                                     <img
                                                         src={item.img?.secure_url || 'https://via.placeholder.com/150'}
                                                         alt={item.name}
                                                         className="w-full h-full object-cover"
-                                                        loading="lazy"
                                                     />
                                                 </div>
                                                 <div>
@@ -187,7 +187,6 @@ function OrderSummary() {
                                 </div>
                             </div>
 
-                            {/* Order Summary */}
                             <div className="mt-8 border-t pt-6 print:mt-4 print:pt-2">
                                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center print:text-base">
                                     <FaBox className="text-green-500 mr-2" />
@@ -209,7 +208,7 @@ function OrderSummary() {
                                     <div className="flex justify-between print:text-sm">
                                         <span className="text-gray-600">Shipping</span>
                                         <span className="font-medium">
-                                            {shippingFee ? formatCurrency(shippingFee) : "Free"}
+                                            {shippingFee ? formatCurrency(shippingFee) : 'Free'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between border-t pt-3 mt-3 print:pt-1 print:mt-1">
@@ -221,7 +220,6 @@ function OrderSummary() {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="mt-8 text-center print:hidden">
                                 <button
                                     onClick={() => window.print()}
@@ -238,7 +236,6 @@ function OrderSummary() {
                                 </button>
                             </div>
 
-                            {/* Print-only message */}
                             <div className="hidden print:block mt-8 text-center text-sm text-gray-500">
                                 <p>Thank you for shopping with us!</p>
                                 <p className="mt-1">For any queries, contact support@example.com</p>

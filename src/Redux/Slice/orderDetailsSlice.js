@@ -1,3 +1,4 @@
+// src/redux/slices/orderDetailsSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../Helper/axiosInstance";
 
@@ -88,7 +89,7 @@ const orderDetailsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Create Order Details
+            // Create Order
             .addCase(createOrderDetails.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -108,7 +109,7 @@ const orderDetailsSlice = createSlice({
                 state.status = 'failed';
             })
 
-            // Get All Order Details
+            // Get All Orders
             .addCase(getAllOrderDetails.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -125,7 +126,7 @@ const orderDetailsSlice = createSlice({
                 state.status = 'failed';
             })
 
-            // Get Orders by Customer ID
+            // Get Customer Orders
             .addCase(getOrderDetailsByCustomerId.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -190,6 +191,6 @@ const orderDetailsSlice = createSlice({
     }
 });
 
-// Export actions and reducer
+// Exports
 export const { resetOrderDetailsState, clearCurrentOrder } = orderDetailsSlice.actions;
 export default orderDetailsSlice.reducer;
