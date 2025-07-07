@@ -54,11 +54,11 @@ function SignUp() {
         setErrors({});
         try {
             const res = await dispatch(createAccount(formData)).unwrap();
-            if (res.success) {
-                navigate(res.redirectTo || '/profile');
-            } else {
-                setErrors({ apiError: res.message || 'Registration failed' });
+            console.log("sign up dispatch res =>", res)
+            if (res) {
+                navigate("/login")
             }
+
         } catch (error) {
             setErrors({ apiError: error.message || 'Something went wrong' });
         } finally {

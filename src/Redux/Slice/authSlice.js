@@ -13,6 +13,7 @@ const initialState = {
 // ✅ Create Account
 export const createAccount = createAsyncThunk("/signup", async (data, { rejectWithValue }) => {
     try {
+
         const res = await toast.promise(
             axiosInstance.post("/users/register", data),
             {
@@ -21,7 +22,10 @@ export const createAccount = createAsyncThunk("/signup", async (data, { rejectWi
                 error: "Failed to create user 😞",
             }
         );
-        return res.data;
+
+        console.log("sign in res =>", res.data.data)
+
+        return res.data.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
@@ -146,8 +150,10 @@ const authSlice = createSlice({
                 state.role = action.payload.user.role;
                 state.data = action.payload.user;
 
+                console.log(action.payload)
+
                 localStorage.setItem("isLoggedIn", "true");
-                localStorage.setItem("role", action.payload.user.role);
+                localStorage.setItem("role", action.payload.data?.data?.user?.role);
                 localStorage.setItem("data", JSON.stringify(action.payload.user));
             })
 
