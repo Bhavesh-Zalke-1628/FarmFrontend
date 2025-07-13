@@ -38,7 +38,7 @@ export default function Header() {
 
         if (result.isConfirmed) {
             const res = await dispatch(logoutAccount());
-            if (res?.payload?.success) navigate('/');
+            if (res?.payload) navigate('/');
         }
     };
 
