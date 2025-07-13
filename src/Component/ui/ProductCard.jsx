@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { addToCart } from "../../Redux/Slice/cartSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { FaSpinner } from "react-icons/fa";
 
 const ProductCard = ({ products, handleProductClick }) => {
@@ -11,6 +11,8 @@ const ProductCard = ({ products, handleProductClick }) => {
     const sortedProducts = [...products].sort(
         (a, b) => (b.offerPercentage || 0) - (a.offerPercentage || 0)
     );
+
+    const { isLoggedIn } = useSelector(state => state?.auth)
 
     const renderCard = (product) => {
         const discountedPrice = Math.round(
@@ -88,20 +90,22 @@ const ProductCard = ({ products, handleProductClick }) => {
                             </span>
                         )}
                     </div>
-
-                    <button
-                        className={`w-full mt-4 py-2 rounded transition ${isOutOfStock
-                            ? "bg-gray-400 cursor-not-allowed text-white"
-                            : "bg-green-600 hover:bg-green-700 text-white"
-                            }`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart(product);
-                        }}
-                        disabled={isOutOfStock}
-                    >
-                        {isOutOfStock ? "Out of Stock" : "Add to Cart"}
-                    </button>
+                    {
+                        isLoggedIn &&
+                        <button
+                            className={`w-full mt-4 py-2 rounded transition ${isOutOfStock
+                                ? "bg-gray-400 cursor-not-allowed text-white"
+                                : "bg-green-600 hover:bg-green-700 text-white"
+                                }`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                            }}
+                            disabled={isOutOfStock}
+                        >
+                            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                        </button>
+                    }
                 </div>
             </div>
         );

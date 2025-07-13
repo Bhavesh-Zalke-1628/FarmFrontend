@@ -62,9 +62,9 @@ function App() {
             <Route
                 path="/products"
                 element={
-                    <ProtectedRoute isAllowed={isLoggedIn}>
+                    // <ProtectedRoute isAllowed={isLoggedIn}>
                         <AllProduct />
-                    </ProtectedRoute>
+                    // </ProtectedRoute>
                 }
             />
 

@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginAccount, sendOtp, verifyOtp } from '../Redux/Slice/authSlice';
 import { FiSmartphone, FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
+import Layout from '../Layout/Layout';
 
 function SignIn() {
     const dispatch = useDispatch();
@@ -91,7 +92,9 @@ function SignIn() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <Layout>
+
+        <div className=" mt-28 bg-gray-50 flex items-center justify-center px-4">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
                 <h2 className="text-2xl font-bold text-center text-gray-800">Sign In</h2>
                 <p className="text-sm text-center text-gray-500 mt-1">
@@ -221,7 +224,9 @@ function SignIn() {
                     </button>
                 </div>
             </div>
-        </div>
+            </div>
+        </Layout>
+
     );
 }
 

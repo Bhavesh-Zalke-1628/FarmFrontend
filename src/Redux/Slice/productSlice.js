@@ -115,12 +115,7 @@ export const changeStockStatus = createAsyncThunk(
     async (productId, { rejectWithValue }) => {
         try {
             const res = await toast.promise(
-                axiosInstance.patch(`/product/change-stock-product/${productId}`),
-                {
-                    pending: "Updating stock status...",
-                    success: "Stock status updated",
-                    error: "Failed to update stock status ❌",
-                }
+                axiosInstance.patch(`/product/change-stock-product/${productId}`)
             );
             return { productId, updatedProduct: res.data.data || res.data };
         } catch (error) {

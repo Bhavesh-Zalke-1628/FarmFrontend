@@ -16,9 +16,7 @@ function AllProduct() {
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        if (isLoggedIn) {
             dispatch(getAllProduct());
-        }
     }, [dispatch, isLoggedIn]);
 
     const handleProductClick = (product) => {
