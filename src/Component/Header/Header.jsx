@@ -213,14 +213,17 @@ export default function Header() {
                             GreenFields
                         </span>
                     </Link>
+
                 </div>
 
                 <div className="flex items-center space-x-3">
+
+                    <button className="p-1 text-gray-600 hover:text-green-600 transition-colors">
+                        <BellIcon className="w-5 h-5" />
+                    </button>
                     {isLoggedIn ? (
                         <>
-                            <button className="p-1 text-gray-600 hover:text-green-600 transition-colors">
-                                <BellIcon className="w-5 h-5" />
-                            </button>
+
                             <div className="flex items-center">
                                 <span className="text-sm font-semibold text-gray-800 capitalize mr-2">
                                     {data?.fullName || 'User'}
