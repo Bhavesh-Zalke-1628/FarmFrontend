@@ -15,6 +15,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import AiAgriAssistant from '../Component/AiAgriAssistant';
 
 function Home() {
     const dispatch = useDispatch();
@@ -650,6 +651,8 @@ function Home() {
                     </div>
                 </div>
             </section>
+
+            <AiAgriAssistant />
 
             {/* CTA Section */}
             <section className="py-20 bg-gradient-to-r from-green-700 to-green-600 text-white text-center">

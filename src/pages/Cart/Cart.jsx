@@ -266,7 +266,6 @@ function Cart() {
             } else {
                 dispatch(localClearCart());
             }
-            toast.success("Cart cleared successfully");
         } catch (error) {
             toast.error(error.message || "Failed to clear cart");
         }
