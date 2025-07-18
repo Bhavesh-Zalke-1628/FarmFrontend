@@ -319,35 +319,35 @@ export default function Header() {
                         </div>
                     </>
                 ) : (
-                        <div ref={dropdownRef} className="relative">
-                            <NavButton
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                icon={<User size={20} />}
-                                label="Account"
-                            />
+                    <div ref={dropdownRef} className="relative">
+                        <NavButton
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            icon={<User size={20} />}
+                            label="Account"
+                        />
 
-                            <AnimatePresence>
-                                {isDropdownOpen && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
-                                    >
-                                        <DropdownItem
-                                            to="/login"
-                                            text="Login"
-                                            onClick={() => setIsDropdownOpen(false)}
-                                        />
-                                        <DropdownItem
-                                            to="/signup"
-                                            text="Register"
-                                            onClick={() => setIsDropdownOpen(false)}
-                                        />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
+                                >
+                                    <DropdownItem
+                                        to="/login"
+                                        text="Login"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    />
+                                    <DropdownItem
+                                        to="/signup"
+                                        text="Register"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 )}
             </div>
