@@ -5,24 +5,25 @@ import { toast } from "react-toastify";
 const initialState = {
     product: {},
     products: [],
+    totalCount: 0,
     loading: false,
     error: false,
 };
 
-// Get All Products
+// ✅ Lazy Loaded Product Fetch
 export const getAllProduct = createAsyncThunk(
     "product/getAll",
-    async (_, { rejectWithValue }) => {
+    async ({ limit = 10, skip = 0 }, { rejectWithValue }) => {
         try {
-            const res = await axiosInstance.get("/product/get-all-product");
-            return res.data;
+            const res = await axiosInstance.get(`/product/get-all-product?limit=${limit}&skip=${skip}`);
+            return res.data; // expected { data: { products: [], totalCount } }
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch products");
         }
     }
 );
 
-// Get Product By ID
+// Get Single Product
 export const getProductById = createAsyncThunk(
     "product/getById",
     async (productId, { rejectWithValue }) => {
@@ -35,6 +36,7 @@ export const getProductById = createAsyncThunk(
     }
 );
 
+// Get Products by Store ID
 export const getProductByStoreId = createAsyncThunk(
     "product/getstoreById",
     async (storeId, { rejectWithValue }) => {
@@ -46,6 +48,7 @@ export const getProductByStoreId = createAsyncThunk(
         }
     }
 );
+
 // Create Product
 export const createProduct = createAsyncThunk(
     "product/create",
@@ -88,7 +91,6 @@ export const updateProduct = createAsyncThunk(
     }
 );
 
-
 // Delete Product
 export const deleteProduct = createAsyncThunk(
     "product/delete",
@@ -109,7 +111,7 @@ export const deleteProduct = createAsyncThunk(
     }
 );
 
-// Change Stock Status
+// Toggle Stock Status
 export const changeStockStatus = createAsyncThunk(
     "product/changeStockStatus",
     async (productId, { rejectWithValue }) => {
@@ -124,12 +126,15 @@ export const changeStockStatus = createAsyncThunk(
     }
 );
 
-
+// Update Product Quantity
 export const updateProductQuantity = createAsyncThunk(
     "products/updateProductQuantity",
     async ({ productId, quantity }, { rejectWithValue }) => {
         try {
-            const res = await axiosInstance.patch(`/product/change-product-quantity/${productId}`, { quantity });
+            const res = await axiosInstance.patch(
+                `/product/change-product-quantity/${productId}`,
+                { quantity }
+            );
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to update quantity");
@@ -137,35 +142,44 @@ export const updateProductQuantity = createAsyncThunk(
     }
 );
 
-
 const productSlice = createSlice({
     name: "product",
     initialState,
     reducers: {
         clearProductState: (state) => {
             state.product = {};
+            state.products = [];
+            state.totalCount = 0;
             state.loading = false;
             state.error = false;
         },
     },
     extraReducers: (builder) => {
         builder
-            // Get All Products
+            // ✅ Get All Products (Pagination)
             .addCase(getAllProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
             })
             .addCase(getAllProduct.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = action.payload.data || action.payload;
+
+                const response = action.payload?.data || {};
+                const newProducts = response.products || [];
+                const totalCount = response.totalCount || 0;
+
+                // ✅ Replace the whole page — don't append
+                state.products = newProducts;
+                state.totalCount = totalCount;
             })
+
             .addCase(getAllProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
                 toast.error(action.payload);
             })
 
-            // Get Product By ID
+            // Get by ID
             .addCase(getProductById.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -180,7 +194,7 @@ const productSlice = createSlice({
                 toast.error(action.payload);
             })
 
-            // Create Product
+            // Create
             .addCase(createProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -196,7 +210,7 @@ const productSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Update Product
+            // Update
             .addCase(updateProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -214,7 +228,7 @@ const productSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Delete Product
+            // Delete
             .addCase(deleteProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -229,7 +243,7 @@ const productSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // ✅ Change Stock Status
+            // Change Stock Status
             .addCase(changeStockStatus.fulfilled, (state, action) => {
                 const { productId, updatedProduct } = action.payload;
                 state.products = state.products.map(p =>
@@ -240,14 +254,15 @@ const productSlice = createSlice({
                 toast.error(action.payload);
                 state.error = action.payload;
             })
-            // Update Product Quantity
+
+            // Update Quantity
             .addCase(updateProductQuantity.pending, (state) => {
                 state.loading = true;
                 state.error = false;
             })
             .addCase(updateProductQuantity.fulfilled, (state, action) => {
                 state.loading = false;
-                const updated = action.payload.data
+                const updated = action.payload.data;
                 state.products = state.products.map((p) =>
                     p._id === updated._id ? updated : p
                 );
@@ -258,10 +273,10 @@ const productSlice = createSlice({
                 toast.error(action.payload);
             })
 
+            // Store Products
             .addCase(getProductByStoreId.fulfilled, (state, action) => {
-                state.products = action.payload.data
-            })
-
+                state.products = action.payload.data;
+            });
     },
 });
 

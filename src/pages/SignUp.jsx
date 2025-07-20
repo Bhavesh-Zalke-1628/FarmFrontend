@@ -55,7 +55,6 @@ function SignUp() {
         setErrors({});
         try {
             const res = await dispatch(createAccount(formData)).unwrap();
-            console.log("sign up dispatch res =>", res)
             if (res) {
                 navigate("/login")
             }

@@ -5,6 +5,7 @@ import razorpaySlice from './Slice/paymentSlice';
 import productSlice from './Slice/productSlice'
 import cartSlice from './Slice/cartSlice'
 import orderPaymentSlice from "./Slice/orderPaymentSlice"
+import farmSlice from './Slice/farmSlice'
 const store = configureStore({
     reducer: {
         auth: authSlice,
@@ -12,7 +13,8 @@ const store = configureStore({
         payment: razorpaySlice,
         products: productSlice,
         cart: cartSlice,
-        order: orderPaymentSlice
+        order: orderPaymentSlice,
+        farm :farmSlice
     },
     devTools: process.env.NODE_ENV !== 'production', // Enable dev tools only in development
 });

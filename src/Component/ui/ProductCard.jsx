@@ -7,6 +7,9 @@ const ProductCard = ({ products, handleProductClick }) => {
     const MAX_SCROLL_CARDS = 7;
     const dispatch = useDispatch();
 
+
+    console.log("ProductCard", products)
+
     // Sort: Offers first
     const sortedProducts = [...products].sort(
         (a, b) => (b.offerPercentage || 0) - (a.offerPercentage || 0)

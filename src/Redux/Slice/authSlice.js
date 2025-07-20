@@ -23,7 +23,6 @@ export const createAccount = createAsyncThunk("/signup", async (data, { rejectWi
             }
         );
 
-        console.log("sign in res =>", res.data.data)
 
         return res.data.data;
     } catch (error) {
@@ -150,8 +149,6 @@ const authSlice = createSlice({
                 state.role = action.payload.user.role;
                 state.data = action.payload.user;
 
-                console.log(action.payload)
-
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("role", action.payload.data?.data?.user?.role);
                 localStorage.setItem("data", JSON.stringify(action.payload.user));
@@ -160,9 +157,6 @@ const authSlice = createSlice({
 
             // Login
             .addCase(loginAccount.fulfilled, (state, action) => {
-
-                console.log(action.payload.data)
-
                 state.isLoggedIn = true;
                 state.role = action.payload.data.user.role;
                 state.data = action.payload.data.user;
