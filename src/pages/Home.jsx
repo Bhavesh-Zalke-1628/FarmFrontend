@@ -42,7 +42,7 @@ function Home() {
     }
 
     useEffect(() => {
-        dispatch(getAllProduct());
+        dispatch(getAllProduct({ limit: 8, skip: 0 }));
 
         const handleResize = () => {
             setVisibleCount(window.innerWidth < 640 ? 4 : 8);

@@ -1,6 +1,10 @@
 import React from 'react';
+import { FaSpinner } from 'react-icons/fa';
+import useAddToCart from '../../Helper/HandleAddToCart';
 
-function ProductModal({ product, onClose }) {
+function ProductModal({ product, onClose, onAddToCart }) {
+    const { handleAddToCart, loading } = useAddToCart(onAddToCart, onClose);
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-lg shadow-xl w-[90%] max-w-xl p-6 relative">
@@ -13,16 +17,17 @@ function ProductModal({ product, onClose }) {
 
                 <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-shrink-0 w-full md:w-1/2 h-60 bg-gray-100 flex items-center justify-center">
-                        {product.img ? (
+                        {product?.img?.secure_url ? (
                             <img
-                                src={product?.img?.secure_url}
+                                src={product.img.secure_url}
                                 alt={product.name}
-                                className="w-full h-full object-cover rounded"
+                                className="w-full h-full object-center rounded"
                             />
                         ) : (
                             <span className="text-gray-400">No Image</span>
                         )}
                     </div>
+
                     <div className="flex flex-col justify-between w-full">
                         <div>
                             <h2 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h2>
@@ -36,14 +41,20 @@ function ProductModal({ product, onClose }) {
                                 )}
                             </div>
                         </div>
+
                         <button
-                            onClick={() => {
-                                // Add to cart logic
-                                onClose();
-                            }}
-                            className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition"
+                            onClick={handleAddToCart}
+                            disabled={loading}
+                            className={`flex items-center justify-center gap-2 bg-green-700 text-white px-4 py-2 rounded transition hover:bg-green-800 ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                                }`}
                         >
-                            Add to Cart
+                            {loading ? (
+                                <>
+                                    <FaSpinner className="animate-spin" /> Adding...
+                                </>
+                            ) : (
+                                'Add to Cart'
+                            )}
                         </button>
                     </div>
                 </div>

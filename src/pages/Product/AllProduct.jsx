@@ -6,12 +6,14 @@ import ProductModal from '../../Component/Modal/ProductModal';
 import Swal from 'sweetalert2';
 import { addToCart } from '../../Redux/Slice/cartSlice';
 import ProductCard from '../../Component/ui/ProductCard';
+import { useNavigate } from 'react-router-dom';
 
 function AllProduct() {
     const dispatch = useDispatch();
     const { products, totalCount, loading, error } = useSelector((state) => state.products);
     const { isLoggedIn } = useSelector((state) => state.auth);
 
+    const navigate = useNavigate()
 
     console.log("products", products)
 
@@ -38,12 +40,17 @@ function AllProduct() {
     };
 
     const handleAddToCart = (e, product) => {
-        e.stopPropagation();
+        // e.stopPropagation();
         if (!isLoggedIn) {
             Swal.fire({
                 icon: 'info',
                 title: 'Login Required',
                 text: 'Please login to add items to your cart.',
+                confirmButtonText: 'Go to Login',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/login'); // Adjust the path as per your route
+                }
             });
             return;
         }
