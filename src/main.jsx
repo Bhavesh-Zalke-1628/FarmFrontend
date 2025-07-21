@@ -4,14 +4,19 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
-import store from './Redux/Store.js'
+import store, { persistor } from './Redux/Store.js' // 👈 import persistor
+import { PersistGate } from 'redux-persist/integration/react' // 👈 import PersistGate
 import { ToastContainer } from 'react-toastify'
 
 createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <BrowserRouter>
-      <App />
-      <ToastContainer />
-    </BrowserRouter>
-  </Provider>
+  <StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}> {/* 👈 wrap here */}
+        <BrowserRouter>
+          <App />
+          <ToastContainer />
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
+  </StrictMode>
 )
