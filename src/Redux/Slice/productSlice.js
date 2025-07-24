@@ -10,20 +10,19 @@ const initialState = {
     error: false,
 };
 
-// ✅ Lazy Loaded Product Fetch
+// All async thunks
 export const getAllProduct = createAsyncThunk(
     "product/getAll",
     async ({ limit = 10, skip = 0 }, { rejectWithValue }) => {
         try {
             const res = await axiosInstance.get(`/product/get-all-product?limit=${limit}&skip=${skip}`);
-            return res.data; // expected { data: { products: [], totalCount } }
+            return res.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch products");
         }
     }
 );
 
-// Get Single Product
 export const getProductById = createAsyncThunk(
     "product/getById",
     async (productId, { rejectWithValue }) => {
@@ -36,20 +35,18 @@ export const getProductById = createAsyncThunk(
     }
 );
 
-// Get Products by Store ID
 export const getProductByStoreId = createAsyncThunk(
-    "product/getstoreById",
+    "product/getByStoreId",
     async (storeId, { rejectWithValue }) => {
         try {
             const res = await axiosInstance.get(`/product/get-store-product/${storeId}`);
             return res.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || "Failed to fetch product");
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch store products");
         }
     }
 );
 
-// Create Product
 export const createProduct = createAsyncThunk(
     "product/create",
     async ({ storeId, productData }, { rejectWithValue }) => {
@@ -71,7 +68,6 @@ export const createProduct = createAsyncThunk(
     }
 );
 
-// Update Product
 export const updateProduct = createAsyncThunk(
     "product/update",
     async ({ productId, productData }, { rejectWithValue }) => {
@@ -91,7 +87,6 @@ export const updateProduct = createAsyncThunk(
     }
 );
 
-// Delete Product
 export const deleteProduct = createAsyncThunk(
     "product/delete",
     async (productId, { rejectWithValue }) => {
@@ -111,13 +106,17 @@ export const deleteProduct = createAsyncThunk(
     }
 );
 
-// Toggle Stock Status
 export const changeStockStatus = createAsyncThunk(
     "product/changeStockStatus",
     async (productId, { rejectWithValue }) => {
         try {
             const res = await toast.promise(
-                axiosInstance.patch(`/product/change-stock-product/${productId}`)
+                axiosInstance.patch(`/product/change-stock-product/${productId}`),
+                {
+                    pending: "Toggling stock...",
+                    success: "Stock status updated",
+                    error: "Failed to update stock status",
+                }
             );
             return { productId, updatedProduct: res.data.data || res.data };
         } catch (error) {
@@ -126,22 +125,26 @@ export const changeStockStatus = createAsyncThunk(
     }
 );
 
-// Update Product Quantity
 export const updateProductQuantity = createAsyncThunk(
-    "products/updateProductQuantity",
+    "product/updateProductQuantity",
     async ({ productId, quantity }, { rejectWithValue }) => {
         try {
-            const res = await axiosInstance.patch(
-                `/product/change-product-quantity/${productId}`,
-                { quantity }
+            const res = await toast.promise(
+                axiosInstance.patch(`/product/change-product-quantity/${productId}`, { quantity }),
+                {
+                    pending: "Updating quantity...",
+                    success: "Product quantity updated",
+                    error: "Failed to update quantity",
+                }
             );
             return res.data;
-        } catch (err) {
-            return rejectWithValue(err.response?.data?.message || "Failed to update quantity");
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to update quantity");
         }
     }
 );
 
+// Product Slice
 const productSlice = createSlice({
     name: "product",
     initialState,
@@ -156,30 +159,24 @@ const productSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // ✅ Get All Products (Pagination)
+            // All products (pagination)
             .addCase(getAllProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
             })
             .addCase(getAllProduct.fulfilled, (state, action) => {
                 state.loading = false;
-
-                const response = action.payload?.data || {};
-                const newProducts = response.products || [];
-                const totalCount = response.totalCount || 0;
-
-                // ✅ Replace the whole page — don't append
-                state.products = newProducts;
+                const { products = [], totalCount = 0 } = action.payload?.data || {};
+                state.products = products;
                 state.totalCount = totalCount;
             })
-
             .addCase(getAllProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
                 toast.error(action.payload);
             })
 
-            // Get by ID
+            // Single product
             .addCase(getProductById.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -194,7 +191,22 @@ const productSlice = createSlice({
                 toast.error(action.payload);
             })
 
-            // Create
+            // Products by store
+            .addCase(getProductByStoreId.pending, (state) => {
+                state.loading = true;
+                state.error = false;
+            })
+            .addCase(getProductByStoreId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = action.payload.data || [];
+            })
+            .addCase(getProductByStoreId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                toast.error(action.payload);
+            })
+
+            // Create product
             .addCase(createProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -204,13 +216,14 @@ const productSlice = createSlice({
                 const newProduct = action.payload.data || action.payload;
                 state.product = newProduct;
                 state.products.unshift(newProduct);
+                state.totalCount += 1;
             })
             .addCase(createProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
 
-            // Update
+            // Update product
             .addCase(updateProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -228,7 +241,7 @@ const productSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Delete
+            // Delete product
             .addCase(deleteProduct.pending, (state) => {
                 state.loading = true;
                 state.error = false;
@@ -237,13 +250,14 @@ const productSlice = createSlice({
                 state.loading = false;
                 const deletedId = action.meta.arg;
                 state.products = state.products.filter(p => p._id !== deletedId);
+                state.totalCount = Math.max(0, state.totalCount - 1);
             })
             .addCase(deleteProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
 
-            // Change Stock Status
+            // Change stock
             .addCase(changeStockStatus.fulfilled, (state, action) => {
                 const { productId, updatedProduct } = action.payload;
                 state.products = state.products.map(p =>
@@ -251,18 +265,18 @@ const productSlice = createSlice({
                 );
             })
             .addCase(changeStockStatus.rejected, (state, action) => {
-                toast.error(action.payload);
                 state.error = action.payload;
+                toast.error(action.payload);
             })
 
-            // Update Quantity
+            // Update quantity
             .addCase(updateProductQuantity.pending, (state) => {
                 state.loading = true;
                 state.error = false;
             })
             .addCase(updateProductQuantity.fulfilled, (state, action) => {
                 state.loading = false;
-                const updated = action.payload.data;
+                const updated = action.payload.data || action.payload;
                 state.products = state.products.map((p) =>
                     p._id === updated._id ? updated : p
                 );
@@ -271,11 +285,6 @@ const productSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
                 toast.error(action.payload);
-            })
-
-            // Store Products
-            .addCase(getProductByStoreId.fulfilled, (state, action) => {
-                state.products = action.payload.data;
             });
     },
 });

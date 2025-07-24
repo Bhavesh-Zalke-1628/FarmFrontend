@@ -119,7 +119,7 @@ export const removeFromCart = createAsyncThunk("cart/removeFromCart", async (pro
             axiosInstance.delete(`/cart/remove/${productId}`),
             {
                 pending: "Removing item...",
-                success: "Item removed successfully ✅",
+                // success: "Item removed successfully ✅",
                 error: "Failed to remove item ❌",
             }
         );

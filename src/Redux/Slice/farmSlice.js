@@ -20,8 +20,6 @@ export const fetchFarmData = createAsyncThunk(
                 location: { lat, lon }
             });
 
-            console.log("analysisResponse", analysisResponse)
-
             // Process data
             const currentWeather = weatherResponse.data.list[0];
             const forecast = weatherResponse.data.list.slice(0, 8).map(item => ({

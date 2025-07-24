@@ -1,92 +1,86 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import CreateStoreModal from '../Modal/CreateStoreModel';
 import CreateProductModal from '../Modal/CreateProduct';
 import ViewProduct from '../Modal/ViewProduct';
-import { Button } from '@mui/material';
-import { Pencil, Trash2, Plus, Store, Package, Info, CookingPot } from 'lucide-react';
+import EditStoreModal from '../Modal/EditStoreModal';
+import { Pencil, Trash2, Plus, Store, Package, Info } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStoreDetails } from '../../Redux/Slice/storeSlice';
-import { changeStockStatus, deleteProduct, getAllProduct, getProductByStoreId, updateProductQuantity } from '../../Redux/Slice/productSlice';
-import EditStoreModal from '../Modal/EditStoreModal';
-import { data } from 'react-router-dom';
+import { changeStockStatus, deleteProduct, getProductByStoreId, updateProductQuantity } from '../../Redux/Slice/productSlice';
 
 function ShowStore() {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showCreateProduct, setShowCreateProduct] = useState(false);
     const [productId, setProductId] = useState(null);
     const [editProductData, setEditProductData] = useState(null);
+    const [editStoreData, setEditStoreData] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [editStoreData, setEditStoreData] = useState(false)
+
     const dispatch = useDispatch();
     const { data: userData } = useSelector((state) => state.auth);
-    const { store, loading: storeLoading } = useSelector((state) => state?.store);
+    const { store, loading: storeLoading } = useSelector((state) => state.store);
     const { products, loading: productsLoading } = useSelector((state) => state.products);
 
-
-
+    // Fetch store and products
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
                 if (userData?._id && !store?._id) {
-                    const res = await dispatch(getStoreDetails(userData?._id));
+                    await dispatch(getStoreDetails(userData._id));
                 }
                 if (store?._id) {
-                    const res = await dispatch(getProductByStoreId(store?._id))
+                    await dispatch(getProductByStoreId(store._id));
                 }
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
+        // Only run when user or store ID changes
     }, [userData?._id, store?._id, dispatch]);
 
-    const handleCreateStore = () => {
+    // Handlers
+    const handleCreateStore = useCallback(() => {
         Swal.fire({
             title: 'Create Your Store',
             html: `
-                <div class="text-left">
-                    <p class="mb-4">To create your store, a one-time payment of <span class="font-bold">₹1000</span> is required.</p>
-                    <ul class="list-disc pl-5 mb-4 space-y-1">
-                        <li>Custom store branding</li>
-                        <li>Unlimited products</li>
-                        <li>24/7 support</li>
-                    </ul>
-                </div>
-            `,
+        <div class="text-left">
+          <p class="mb-4">To create your store, a one-time payment of <span class="font-bold">₹1000</span> is required.</p>
+          <ul class="list-disc pl-5 mb-4 space-y-1">
+            <li>Custom store branding</li>
+            <li>Unlimited products</li>
+            <li>24/7 support</li>
+          </ul>
+        </div>
+      `,
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#f59e0b',
             confirmButtonText: 'Proceed to Payment',
             cancelButtonText: 'Not Now',
             showLoaderOnConfirm: true,
-            preConfirm: () => {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve();
-                    }, 1000);
-                });
-            }
+            preConfirm: () => new Promise((resolve) => setTimeout(resolve, 1000)),
         }).then((result) => {
             if (result.isConfirmed) {
                 setShowCreateForm(true);
             }
         });
-    };
+    }, []);
 
-    const openCreateProductModal = () => {
+    const openCreateProductModal = useCallback(() => {
         setEditProductData(null);
         setShowCreateProduct(true);
-    };
+    }, []);
 
-    const handleEditProduct = (e, product) => {
+    const handleEditProduct = useCallback((e, product) => {
         e.stopPropagation();
         setEditProductData(product);
         setShowCreateProduct(true);
-    };
+    }, []);
 
-    const handleDeleteProduct = (e, productId) => {
+    const handleDeleteProduct = useCallback((e, id) => {
         e.stopPropagation();
         Swal.fire({
             title: 'Are you sure?',
@@ -98,40 +92,37 @@ function ShowStore() {
             confirmButtonText: 'Yes, delete it!',
             background: '#ffffff',
             backdrop: `
-                rgba(0,0,0,0.5)
-                url("/images/nyan-cat.gif")
-                left top
-                no-repeat
-            `
+        rgba(0,0,0,0.5)
+        url("/images/nyan-cat.gif")
+        left top
+        no-repeat
+      `
         }).then((result) => {
             if (result.isConfirmed) {
-                dispatch(deleteProduct(productId))
+                dispatch(deleteProduct(id))
                     .unwrap()
                     .then(() => {
-                        Swal.fire(
-                            'Deleted!',
-                            'Your product has been deleted.',
-                            'success'
-                        );
+                        Swal.fire('Deleted!', 'Your product has been deleted.', 'success');
                         dispatch(getProductByStoreId(store?._id));
                     })
                     .catch(() => {
-                        Swal.fire(
-                            'Error!',
-                            'Failed to delete product.',
-                            'error'
-                        );
+                        Swal.fire('Error!', 'Failed to delete product.', 'error');
                     });
             }
         });
-    };
+    }, [dispatch, store?._id]);
 
-    const toggleStock = async (status, productId) => {
+    const toggleStock = useCallback(async (status, productId) => {
+
+        console.log(status, productId)
 
         const res = await dispatch(changeStockStatus(productId));
+
+        console.log("res", res)
         const updatedStatus = res?.payload?.updatedProduct?.outOfStock;
 
-        // If product is now back in stock (previously out of stock)
+        console.log(updatedStatus)
+
         if (!updatedStatus) {
             const { value: quantity } = await Swal.fire({
                 title: "Stock Enabled",
@@ -140,17 +131,10 @@ function ShowStore() {
                 input: "number",
                 inputLabel: "Quantity",
                 inputPlaceholder: "Enter quantity",
-                inputAttributes: {
-                    min: 1
-                },
+                inputAttributes: { min: 1 },
                 showCancelButton: true,
                 confirmButtonText: "Update",
                 cancelButtonText: "Cancel",
-                customClass: {
-                    popup: "custom-swal-popup",
-                    title: "custom-swal-title",
-                    confirmButton: "custom-swal-confirm"
-                },
                 preConfirm: (value) => {
                     if (!value || isNaN(value) || Number(value) <= 0) {
                         Swal.showValidationMessage("Please enter a valid quantity greater than 0");
@@ -161,7 +145,7 @@ function ShowStore() {
             });
 
             if (quantity) {
-                const res = await dispatch(updateProductQuantity({ productId, quantity }));
+                await dispatch(updateProductQuantity({ productId, quantity }));
                 Swal.fire({
                     icon: "success",
                     title: "Quantity Updated",
@@ -171,13 +155,14 @@ function ShowStore() {
                 });
             }
         }
-    };
+    }, [dispatch]);
 
-    const handleEditStore = (e) => {
-        e.stopPropagation()
-        setEditStoreData(true)
-    }
+    const handleEditStore = useCallback((e) => {
+        e.stopPropagation();
+        setEditStoreData(true);
+    }, []);
 
+    // Show loading spinner
     if (isLoading || storeLoading || productsLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
@@ -186,6 +171,7 @@ function ShowStore() {
         );
     }
 
+    // Main render
     return (
         <div className="w-full px-4 py-8 max-w-7xl mx-auto">
             {/* Store Header */}
@@ -198,10 +184,10 @@ function ShowStore() {
                     <p className="text-gray-500 mt-1">
                         {store?._id
                             ? 'Manage your store and products'
-                            : 'Create your store to start selling'}
+                            : 'Create your store to start selling'
+                        }
                     </p>
                 </div>
-
                 {store?._id && (
                     <button
                         onClick={openCreateProductModal}
@@ -215,13 +201,11 @@ function ShowStore() {
 
             {store?._id ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* 🏬 Store Information Card */}
-                    <div className="lg:col-span-1 max-h-fit bg-white rounded-xl shadow-lg  border border-gray-100">
-                        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 text-white rounded-t-lg">
-                            <div className="flex items-center gap-3">
-                                <Store size={24} />
-                                <h2 className="text-xl font-semibold">Store Information</h2>
-                            </div>
+                    {/* Store Info */}
+                    <div className="lg:col-span-1 max-h-fit bg-white rounded-xl shadow-lg border border-gray-100">
+                        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 text-white rounded-t-lg flex items-center gap-3">
+                            <Store size={24} />
+                            <h2 className="text-xl font-semibold">Store Information</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
@@ -242,7 +226,7 @@ function ShowStore() {
                             </div>
                             <div className="pt-4 border-t border-gray-100">
                                 <button
-                                    onClick={(e) => handleEditStore(e, store)}
+                                    onClick={handleEditStore}
                                     className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">
                                     Edit Store Details
                                 </button>
@@ -250,17 +234,14 @@ function ShowStore() {
                         </div>
                     </div>
 
-                    {/* 📦 Products Section */}
+                    {/* Products */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Product List Card */}
+                        {/* Product List */}
                         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
-                                <div className="flex items-center gap-3">
-                                    <Package size={24} />
-                                    <h2 className="text-xl font-semibold">Your Products</h2>
-                                </div>
+                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white flex items-center gap-3">
+                                <Package size={24} />
+                                <h2 className="text-xl font-semibold">Your Products</h2>
                             </div>
-
                             <div className="p-4">
                                 {products?.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -289,13 +270,12 @@ function ShowStore() {
                                                         <span className="text-white text-sm font-medium">Click to view details</span>
                                                     </div>
                                                 </div>
-
                                                 {/* Info */}
                                                 <div className="p-4">
                                                     <div className="flex justify-between items-start">
                                                         <div>
-                                                            <h3 className="font-semibold text-gray-800 line-clamp-1 capitalize">{product.name}</h3>
-                                                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+                                                            <h3 className="font-semibold text-gray-800 capitalize">{product.name}</h3>
+                                                            <p className="text-sm text-gray-500 mt-1">{product.description}</p>
                                                             <h3 className="font-semibold text-gray-800 mt-1">Qty: {product.quantity}</h3>
                                                             <h3 className="font-semibold text-gray-800 mt-1">Offer: {product.offerPercentage}</h3>
                                                         </div>
@@ -303,7 +283,6 @@ function ShowStore() {
                                                             {product.category || 'Uncategorized'}
                                                         </span>
                                                     </div>
-
                                                     <div className="mt-3 flex items-center justify-between">
                                                         <div className="flex items-center gap-2 mt-2">
                                                             {product.offerPercentage > 0 ? (
@@ -319,30 +298,30 @@ function ShowStore() {
                                                                     </span>
                                                                 </>
                                                             ) : (
-                                                                <span className="text-green-600 font-bold text-lg">
-                                                                    ₹{product.price}
-                                                                </span>
+                                                                <span className="text-green-600 font-bold text-lg">₹{product.price}</span>
                                                             )}
                                                         </div>
-
                                                         {product.originalPrice && (
                                                             <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                                                         )}
                                                         <div className="flex items-center space-x-4">
                                                             <p className="font-bold capitalize">Stock {!product.outOfStock ? 'In' : 'Out'}</p>
+                                                            {
+                                                                console.log(product?.outOfStock)
+                                                            }
+
                                                             <button
                                                                 onClick={() => toggleStock(product.outOfStock, product._id)}
                                                                 className={`w-14 h-7 flex items-center rounded-full p-1 transition duration-300 ${!product.outOfStock ? 'bg-green-500' : 'bg-red-500'}`}
                                                             >
                                                                 <div
                                                                     className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${!product.outOfStock ? 'translate-x-7' : 'translate-x-0'}`}
-                                                                ></div>
+                                                                />
                                                             </button>
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                {/* Action Buttons */}
+                                                {/* Actions */}
                                                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     <button
                                                         onClick={(e) => handleEditProduct(e, product)}
@@ -378,47 +357,40 @@ function ShowStore() {
                                 )}
                             </div>
                         </div>
-
-                        {/* 📊 Stats Cards */}
+                        {/* Stats Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-100 rounded-full">
-                                        <Package className="text-green-600" size={18} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Total Products</p>
-                                        <p className="text-xl font-semibold">{products?.length || 0}</p>
-                                    </div>
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-green-100 rounded-full">
+                                    <Package className="text-green-600" size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Total Products</p>
+                                    <p className="text-xl font-semibold">{products?.length || 0}</p>
                                 </div>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-100 rounded-full">
-                                        <Info className="text-blue-600" size={18} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Active Listings</p>
-                                        <p className="text-xl font-semibold">{products?.length || 0}</p>
-                                    </div>
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 rounded-full">
+                                    <Info className="text-blue-600" size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Active Listings</p>
+                                    <p className="text-xl font-semibold">{products?.length || 0}</p>
                                 </div>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-100 rounded-full">
-                                        <Store className="text-purple-600" size={18} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Store Rating</p>
-                                        <p className="text-xl font-semibold">4.8 ★</p>
-                                    </div>
+                            <div className="bg-white p-4 rounded-lg shadow border border-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-full">
+                                    <Store className="text-purple-600" size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Store Rating</p>
+                                    <p className="text-xl font-semibold">4.8 ★</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             ) : (
+                // No store: show call to action
                 <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-lg border border-gray-100">
                     <Store size={64} className="text-yellow-500 mb-6" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">You don't have a store yet</h2>

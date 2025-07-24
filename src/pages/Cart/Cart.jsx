@@ -12,17 +12,18 @@ import {
     localAddToCart,
     localRemoveFromCart,
     localDecrementQuantity,
-    localClearCart
+    localClearCart,
 } from '../../Redux/Slice/cartSlice';
 import { OrderSummary } from '../../Component/Comman/OrderSummary';
 
+// Utility functions
 const calculateDiscountedPrice = (price, offerPercentage = 0, quantity = 1) => {
     const discount = price * (offerPercentage / 100);
     return (price - discount) * quantity;
 };
-
 const calculateOriginalPrice = (price, quantity = 1) => price * quantity;
 
+// Loading spinner component
 const LoadingCart = React.memo(() => (
     <div className="max-w-6xl mx-auto px-4 py-10 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
@@ -30,6 +31,7 @@ const LoadingCart = React.memo(() => (
     </div>
 ));
 
+// Error state component
 const ErrorCart = React.memo(({ error, onRetry }) => (
     <div className="max-w-6xl mx-auto px-4 py-10 text-center">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,6 +48,7 @@ const ErrorCart = React.memo(({ error, onRetry }) => (
     </div>
 ));
 
+// Cart header (shows total/QTY and clear cart action)
 const CartHeader = React.memo(({ totalQuantity, onClearCart, hasItems }) => (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-0">
@@ -66,6 +69,7 @@ const CartHeader = React.memo(({ totalQuantity, onClearCart, hasItems }) => (
     </div>
 ));
 
+// Presentational, empty cart state
 const EmptyCart = React.memo(() => (
     <div className="text-center py-12 sm:py-20 bg-white rounded-lg shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 sm:h-20 w-16 sm:w-20 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,12 +90,12 @@ const EmptyCart = React.memo(() => (
     </div>
 ));
 
+// Cart item row
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
     const discountedPrice = useMemo(
         () => calculateDiscountedPrice(item.price, item.offerPercentage, item.quantity),
         [item.price, item.offerPercentage, item.quantity]
     );
-
     const originalPrice = useMemo(
         () => calculateOriginalPrice(item.price, item.quantity),
         [item.price, item.quantity]
@@ -122,7 +126,6 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
                         <p className="text-green-600 text-xs sm:text-sm mt-1">{item.offerPercentage}% OFF</p>
                     )}
                 </div>
-
                 <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center border border-gray-300 rounded-lg w-fit">
                         <button
@@ -143,7 +146,6 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
                             +
                         </button>
                     </div>
-
                     <div className="text-right">
                         <div className="flex flex-col items-end">
                             <p className="text-base sm:text-lg font-bold text-gray-900">
@@ -172,6 +174,7 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
     );
 });
 
+// Items list
 const CartItems = React.memo(({ items, onIncrement, onDecrement, onRemove }) => (
     <div className="space-y-3 sm:space-y-4">
         {items.map((item) => (
@@ -204,10 +207,10 @@ function Cart() {
         error
     } = cartState;
 
+    // Handle increment/decrement/remove actions
     const handleIncrement = useCallback(async (productId) => {
         const item = items.find(i => i.productId === productId);
         if (!item) return;
-
         try {
             if (isLoggedIn) {
                 await dispatch(updateCartItemQuantity({
@@ -238,13 +241,11 @@ function Cart() {
     const handleDecrement = useCallback(async (productId) => {
         const item = items.find(i => i.productId === productId);
         if (!item) return;
-
         try {
             if (item.quantity <= 1) {
                 await handleRemove(productId);
                 return;
             }
-
             if (isLoggedIn) {
                 await dispatch(updateCartItemQuantity({
                     productId,
@@ -271,25 +272,25 @@ function Cart() {
         }
     }, [dispatch, isLoggedIn]);
 
+    // ** Fetch cart from backend if user is logged in and status is "idle" **
     useEffect(() => {
         if (isLoggedIn && status === 'idle') {
             dispatch(fetchCart());
         }
     }, [dispatch, isLoggedIn, status]);
 
+    // On purchase, validate that all items are available.
     const handlePurchase = useCallback(() => {
         const unavailableItems = items.some(item => item.outOfStock || item.isDeleted);
         if (unavailableItems) {
             toast.error("Please remove unavailable items before checkout");
             return;
         }
-
         if (!isLoggedIn) {
             toast.info("Please login to proceed to checkout");
             navigate("/login", { state: { from: "/cart" } });
             return;
         }
-
         navigate("/order-checkout", {
             state: {
                 items: items.filter(item => !item.isDeleted),
@@ -301,16 +302,15 @@ function Cart() {
                 shippingFee,
             }
         });
-    }, [isLoggedIn, items, totalPrice, totalQuantity, totalDiscount, grandTotal, shippingFee, navigate]);
+    }, [isLoggedIn, items, totalPrice, totalQuantity, totalDiscount, grandTotal, shippingFee, navigate, netPrice]);
 
+    // Render logic
     if (status === 'loading') {
         return <Layout><LoadingCart /></Layout>;
     }
-
     if (error) {
         return <Layout><ErrorCart error={error} onRetry={() => dispatch(fetchCart())} /></Layout>;
     }
-
     return (
         <Layout>
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
@@ -319,30 +319,29 @@ function Cart() {
                     onClearCart={handleClearCart}
                     hasItems={items.length > 0}
                 />
-
                 {items.length === 0 ? (
                     <EmptyCart />
                 ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2">
-                                <CartItems
-                                    items={items}
-                                    onIncrement={handleIncrement}
-                                    onDecrement={handleDecrement}
-                                    onRemove={handleRemove}
-                                />
-                            </div>
-                            <div className="lg:col-span-1">
-                                <OrderSummary
-                                    totalQuantity={totalQuantity}
-                                    totalPrice={totalPrice}
-                                    totalDiscount={totalDiscount}
-                                    shippingFee={shippingFee}
-                                    grandTotal={grandTotal}
-                                    onCheckout={handlePurchase}
-                                    netPrice={netPrice}
-                                />
-                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
+                            <CartItems
+                                items={items}
+                                onIncrement={handleIncrement}
+                                onDecrement={handleDecrement}
+                                onRemove={handleRemove}
+                            />
+                        </div>
+                        <div className="lg:col-span-1">
+                            <OrderSummary
+                                totalQuantity={totalQuantity}
+                                totalPrice={totalPrice}
+                                totalDiscount={totalDiscount}
+                                shippingFee={shippingFee}
+                                grandTotal={grandTotal}
+                                onCheckout={handlePurchase}
+                                netPrice={netPrice}
+                            />
+                        </div>
                     </div>
                 )}
             </div>
