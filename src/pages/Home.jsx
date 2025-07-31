@@ -5,10 +5,13 @@ import {
     Sun, Cloud, CloudSnow, Zap, ShoppingCart, Star, TrendingUp, Leaf,
     Users, Award, ArrowRight, RefreshCw, AlertCircle, Heart, Filter,
     Search, Bell, Settings, Menu, X, ChevronDown, Grid, List, Package,
-    Truck, Shield, Clock, Phone, Mail, Globe, ChevronRight
+    Truck, Shield, Clock, Phone, Mail, Globe, ChevronRight,
+    User
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProduct } from '../Redux/Slice/productSlice';
+import { Link } from 'react-router-dom';
+import AuthButtons from '../Component/Comman/AuthButtons';
 
 const WEATHER_API_KEY = 'c0767a98c8629fa2703381c21cef3eb6';
 
@@ -17,7 +20,6 @@ function EnhancedFarmDashboard() {
     const [loading, setLoading] = useState(true);
     const [locationName, setLocationName] = useState("Your Farm");
     const [activeTab, setActiveTab] = useState('overview');
-    const [isLoggedIn] = useState(true);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [viewMode, setViewMode] = useState('grid');
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,13 +31,17 @@ function EnhancedFarmDashboard() {
 
     const dispatch = useDispatch();
     const { products = [] } = useSelector(state => state?.products || {});
-
+    const { isLoggedIn } = useSelector(state => state?.auth)
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
+        ``
     }, []);
 
     useEffect(() => {
+
+
+
         const fetchData = async () => {
             setLoading(true);
             try {
@@ -78,7 +84,6 @@ function EnhancedFarmDashboard() {
                     setLocationName("Demo Farm Location");
                 }
 
-                dispatch(getAllProduct());
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -300,10 +305,10 @@ function EnhancedFarmDashboard() {
                 </div>
             </header>
 
-            {/* Enhanced Navigation */}
             <nav className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-gray-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between h-20">
+                        {/* Left: Navigation Tabs */}
                         <div className="flex space-x-1 lg:space-x-8">
                             {[
                                 { id: 'overview', label: 'Overview', icon: Thermometer },
@@ -321,24 +326,16 @@ function EnhancedFarmDashboard() {
                                     <Icon size={18} className="mr-2" />
                                     <span className="hidden sm:inline">{label}</span>
                                 </button>
+
                             ))}
                         </div>
-
-                        {/* Quick Actions */}
-                        <div className="flex items-center gap-2 lg:gap-4">
-                            <div className="relative hidden lg:block">
-                                <Bell size={20} className="text-gray-600 hover:text-green-600 cursor-pointer transition-colors" />
-                                {notifications > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                                        {notifications}
-                                    </span>
-                                )}
-                            </div>
-                            <Settings size={20} className="text-gray-600 hover:text-green-600 cursor-pointer transition-colors hidden lg:block" />
-                        </div>
+                        {/* AuthButtons */}
+                        <AuthButtons isLoggedIn={isLoggedIn} />
                     </div>
                 </div>
             </nav>
+
+
 
             {/* Main Content with Enhanced Animations */}
             <main className="max-w-7xl mx-auto px-4 py-6 lg:py-12">
@@ -362,7 +359,7 @@ function EnhancedFarmDashboard() {
                                         value={`${Math.round(weatherData.main.temp)}°C`}
                                         subtitle={`Feels like ${Math.round(weatherData.main.feels_like)}°C`}
                                         trend={2.3}
-                                        color="red"
+                                        // color="red"
                                         gradient={true}
                                     />
                                     <StatCard
@@ -640,7 +637,10 @@ function EnhancedFarmDashboard() {
                                 </div>
                             </div>
                         </div>
-
+                        {
+                            console.log("bhavesh")
+                        }
+                        {console.log(filteredProducts)}
                         {/* Products Grid/List */}
                         <div className={`grid gap-6 ${viewMode === 'grid'
                             ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
@@ -785,7 +785,11 @@ function EnhancedFarmDashboard() {
                                                 <ShoppingCart size={18} />
                                                 {isLoggedIn
                                                     ? product.outOfStock ? "Out of Stock" : "Add to Cart"
-                                                    : "View Details"}
+                                                    :
+                                                    <Link>
+                                                        "View Details"
+                                                    </Link>
+                                                }
                                             </button>
 
                                             {!product.outOfStock && (
@@ -853,7 +857,7 @@ function EnhancedFarmDashboard() {
                                 value="98.5"
                                 subtitle="Premium grade products"
                                 trend={3.2}
-                                color="purple"
+                                // color="purple"
                                 gradient={true}
                             />
                             <StatCard
@@ -950,8 +954,8 @@ function EnhancedFarmDashboard() {
                 )}
             </main>
 
-        
-            <style jsx>{`
+
+            {/* <style jsx>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
@@ -974,8 +978,8 @@ function EnhancedFarmDashboard() {
                     -webkit-box-orient: vertical;
                     overflow: hidden;
                 }
-            `}</style>
-            
+            `}</style> */}
+
         </div>
     );
 }

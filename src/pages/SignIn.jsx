@@ -16,7 +16,7 @@ function SignIn() {
     const [formData, setFormData] = useState({
         mobileNumber: '',
         password: '',
-        otp: ''
+        otp: '',
     });
 
     const validateForm = () => {
@@ -26,21 +26,24 @@ function SignIn() {
         } else if (!/^\d{10}$/.test(formData.mobileNumber)) {
             newErrors.mobileNumber = 'Invalid mobile number';
         }
+
         if (authMethod === 'password' && !formData.password) {
             newErrors.password = 'Password is required';
         }
+
         if (authMethod === 'otp' && otpSent && !formData.otp) {
             newErrors.otp = 'OTP is required';
         }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
         if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
+            setErrors((prev) => ({ ...prev, [name]: '' }));
         }
     };
 
@@ -53,22 +56,28 @@ function SignIn() {
         try {
             let res;
             if (authMethod === 'password') {
-                res = await dispatch(loginAccount({
-                    mobileNumber: formData.mobileNumber,
-                    password: formData.password
-                })).unwrap();
+                res = await dispatch(
+                    loginAccount({
+                        mobileNumber: formData.mobileNumber,
+                        password: formData.password,
+                    })
+                ).unwrap();
             } else {
                 if (otpSent) {
-                    res = await dispatch(verifyOtp({
-                        mobileNumber: formData.mobileNumber,
-                        otp: formData.otp
-                    })).unwrap();
+                    res = await dispatch(
+                        verifyOtp({
+                            mobileNumber: formData.mobileNumber,
+                            otp: formData.otp,
+                        })
+                    ).unwrap();
                 } else {
-                    res = await dispatch(sendOtp({
-                        mobileNumber: formData.mobileNumber
-                    })).unwrap();
+                    res = await dispatch(
+                        sendOtp({
+                            mobileNumber: formData.mobileNumber,
+                        })
+                    ).unwrap();
                     setOtpSent(true);
-                    return;
+                    return; // wait for OTP input next submit
                 }
             }
 
@@ -85,150 +94,200 @@ function SignIn() {
     };
 
     const toggleAuthMethod = () => {
-        setAuthMethod(prev => prev === 'password' ? 'otp' : 'password');
+        setAuthMethod((prev) => (prev === 'password' ? 'otp' : 'password'));
         setOtpSent(false);
-        setFormData(prev => ({ ...prev, password: '', otp: '' }));
+        setFormData((prev) => ({ ...prev, password: '', otp: '' }));
         setErrors({});
     };
 
     return (
         <Layout>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+                <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8 sm:p-10">
+                    <h2 className="text-3xl font-extrabold text-gray-900 text-center">Sign In</h2>
+                    <p className="mt-2 text-sm text-gray-600 text-center">
+                        Or{' '}
+                        <Link to="/signup" className="font-medium text-green-600 hover:underline">
+                            create a new account
+                        </Link>
+                    </p>
 
-        <div className=" mt-28 bg-gray-50 flex items-center justify-center px-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-center text-gray-800">Sign In</h2>
-                <p className="text-sm text-center text-gray-500 mt-1">
-                    Or{' '}
-                    <Link to="/signup" className="text-green-600 hover:underline">
-                        create a new account
-                    </Link>
-                </p>
-
-                {errors.apiError && (
-                    <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-3 rounded">
-                        <p className="text-sm text-red-700">{errors.apiError}</p>
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-                    {/* Mobile */}
-                    <div>
-                        <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700">Mobile Number</label>
-                        <div className="relative mt-1">
-                            <span className="absolute left-3 top-2.5 text-gray-400">
-                                <FiSmartphone className="h-5 w-5" />
-                            </span>
-                            <input
-                                id="mobileNumber"
-                                name="mobileNumber"
-                                type="tel"
-                                placeholder="9876543210"
-                                maxLength="10"
-                                value={formData.mobileNumber}
-                                onChange={handleChange}
-                                className={`w-full pl-10 pr-3 py-2 rounded-xl border ${errors.mobileNumber ? 'border-red-400' : 'border-gray-300'} focus:ring-green-500 focus:border-green-500 outline-none shadow-sm`}
-                            />
+                    {errors.apiError && (
+                        <div
+                            role="alert"
+                            className="mt-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md"
+                        >
+                            <p className="text-sm text-red-700">{errors.apiError}</p>
                         </div>
-                        {errors.mobileNumber && (
-                            <p className="mt-1 text-sm text-red-600">{errors.mobileNumber}</p>
-                        )}
-                    </div>
-
-                    {/* Password or OTP */}
-                    {authMethod === 'password' ? (
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                            <div className="relative mt-1">
-                                <span className="absolute left-3 top-2.5 text-gray-400">
-                                    <FiLock className="h-5 w-5" />
-                                </span>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className={`w-full pl-10 pr-3 py-2 rounded-xl border ${errors.password ? 'border-red-400' : 'border-gray-300'} focus:ring-green-500 focus:border-green-500 outline-none shadow-sm`}
-                                />
-                            </div>
-                            {errors.password && (
-                                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                            )}
-                            <div className="text-right mt-2">
-                                <Link to="/forgot-password" className="text-sm text-green-600 hover:underline">Forgot password?</Link>
-                            </div>
-                        </div>
-                    ) : (
-                        otpSent && (
-                            <div>
-                                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">OTP</label>
-                                <div className="relative mt-1">
-                                    <span className="absolute left-3 top-2.5 text-gray-400">
-                                        <FiMail className="h-5 w-5" />
-                                    </span>
-                                    <input
-                                        id="otp"
-                                        name="otp"
-                                        type="text"
-                                        placeholder="Enter 6-digit OTP"
-                                        value={formData.otp}
-                                        onChange={handleChange}
-                                        maxLength="6"
-                                        className={`w-full pl-10 pr-3 py-2 rounded-xl border ${errors.otp ? 'border-red-400' : 'border-gray-300'} focus:ring-green-500 focus:border-green-500 outline-none shadow-sm`}
-                                    />
-                                </div>
-                                {errors.otp && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.otp}</p>
-                                )}
-                                <p className="text-sm text-gray-500 mt-1">
-                                    OTP sent to +91 {formData.mobileNumber}
-                                </p>
-                            </div>
-                        )
                     )}
 
-                    {/* Submit */}
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`w-full flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                        >
-                            {loading
-                                ? 'Processing...'
-                                : authMethod === 'password'
-                                    ? 'Sign in'
-                                    : otpSent ? 'Verify OTP' : 'Send OTP'}
-                            {!loading && <FiArrowRight />}
-                        </button>
-                    </div>
-                </form>
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-6" noValidate>
+                        {/* Mobile Number Field */}
+                        <div>
+                            <label
+                                htmlFor="mobileNumber"
+                                className="block text-sm font-medium text-gray-700"
+                            >
+                                Mobile Number
+                            </label>
+                            <div className="relative mt-1">
+                                <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                    <FiSmartphone className="h-5 w-5" aria-hidden="true" />
+                                </span>
+                                <input
+                                    type="tel"
+                                    name="mobileNumber"
+                                    id="mobileNumber"
+                                    placeholder="9876543210"
+                                    maxLength="10"
+                                    value={formData.mobileNumber}
+                                    onChange={handleChange}
+                                    className={`block w-full rounded-xl border px-3 py-2 pl-10 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm ${errors.mobileNumber ? 'border-red-400' : 'border-gray-300'
+                                        }`}
+                                    aria-invalid={errors.mobileNumber ? 'true' : 'false'}
+                                    aria-describedby={errors.mobileNumber ? 'mobileNumber-error' : undefined}
+                                />
+                            </div>
+                            {errors.mobileNumber && (
+                                <p
+                                    className="mt-1 text-sm text-red-600"
+                                    id="mobileNumber-error"
+                                    role="alert"
+                                >
+                                    {errors.mobileNumber}
+                                </p>
+                            )}
+                        </div>
 
-                {/* Divider + Toggle Method */}
-                <div className="mt-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
+                        {/* Password or OTP input */}
+                        {authMethod === 'password' ? (
+                            <div>
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700"
+                                >
+                                    Password
+                                </label>
+                                <div className="relative mt-1">
+                                    <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                        <FiLock className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className={`block w-full rounded-xl border px-3 py-2 pl-10 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm ${errors.password ? 'border-red-400' : 'border-gray-300'
+                                            }`}
+                                        aria-invalid={errors.password ? 'true' : 'false'}
+                                        aria-describedby={errors.password ? 'password-error' : undefined}
+                                    />
+                                </div>
+                                {errors.password && (
+                                    <p
+                                        className="mt-1 text-sm text-red-600"
+                                        id="password-error"
+                                        role="alert"
+                                    >
+                                        {errors.password}
+                                    </p>
+                                )}
+                                <div className="text-right mt-2">
+                                    <Link
+                                        to="/forgot-password"
+                                        className="text-sm font-medium text-green-600 hover:underline"
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                            </div>
+                        ) : (
+                            otpSent && (
+                                <div>
+                                    <label
+                                        htmlFor="otp"
+                                        className="block text-sm font-medium text-gray-700"
+                                    >
+                                        OTP
+                                    </label>
+                                    <div className="relative mt-1">
+                                        <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                            <FiMail className="h-5 w-5" aria-hidden="true" />
+                                        </span>
+                                        <input
+                                            id="otp"
+                                            name="otp"
+                                            type="text"
+                                            placeholder="Enter 6-digit OTP"
+                                            value={formData.otp}
+                                            onChange={handleChange}
+                                            maxLength={6}
+                                            className={`block w-full rounded-xl border px-3 py-2 pl-10 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm ${errors.otp ? 'border-red-400' : 'border-gray-300'
+                                                }`}
+                                            aria-invalid={errors.otp ? 'true' : 'false'}
+                                            aria-describedby={errors.otp ? 'otp-error' : undefined}
+                                        />
+                                    </div>
+                                    {errors.otp && (
+                                        <p
+                                            className="mt-1 text-sm text-red-600"
+                                            id="otp-error"
+                                            role="alert"
+                                        >
+                                            {errors.otp}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        OTP sent to +91 {formData.mobileNumber}
+                                    </p>
+                                </div>
+                            )
+                        )}
+
+                        {/* Submit Button */}
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 py-2 text-white text-sm font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-green-700`}
+                            >
+                                {loading
+                                    ? 'Processing...'
+                                    : authMethod === 'password'
+                                        ? 'Sign in'
+                                        : otpSent
+                                            ? 'Verify OTP'
+                                            : 'Send OTP'}
+                                {!loading && <FiArrowRight className="w-5 h-5" aria-hidden="true" />}
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Divider and Toggle Auth Method */}
+                    <div className="mt-6 relative">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
                             <div className="w-full border-t border-gray-300" />
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                            <span className="bg-white px-2 text-gray-500 select-none cursor-default">
+                                Or continue with
+                            </span>
                         </div>
                     </div>
 
                     <button
                         onClick={toggleAuthMethod}
-                        className="mt-6 w-full py-2 px-4 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 shadow-sm"
+                        type="button"
+                        className="mt-6 w-full rounded-xl border border-gray-300 bg-white py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                         {authMethod === 'password' ? 'Sign in with OTP' : 'Sign in with Password'}
                     </button>
                 </div>
             </div>
-            </div>
         </Layout>
-
     );
 }
 
-
-export default SignIn
+export default SignIn;
