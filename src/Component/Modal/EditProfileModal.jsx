@@ -43,6 +43,8 @@ function EditProfileModal({ initialData, onClose }) {
             }
         }
 
+        console.log(updatedFields)
+
         // ✅ Only dispatch if any field changed
         if (Object.keys(updatedFields).length > 0) {
             await dispatch(updateProfile(updatedFields));

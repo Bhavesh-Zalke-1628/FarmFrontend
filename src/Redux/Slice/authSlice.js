@@ -136,6 +136,28 @@ export const updateProfile = createAsyncThunk("/update-profile", async (formData
 });
 
 
+export const updateProfilePicture = createAsyncThunk("/update-profile-picture", async (formData, { rejectWithValue }) => {
+
+    console.log(formData)
+    try {
+        const res = await toast.promise(
+            axiosInstance.patch("/users/update-profile-pic", formData),
+            {
+                pending: "Updating profile Picture...",
+                success: "Profile updated successfully ✅",
+                error: "Failed to update profile picture ❌",
+            }
+        );
+
+        console.log(res)
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || "Failed to update profile");
+    }
+});
+
+
+
 // ✅ Slice
 const authSlice = createSlice({
     name: "auth",
@@ -183,6 +205,10 @@ const authSlice = createSlice({
             // gettting all users
             .addCase(getAllUsers.fulfilled, (state, action) => {
                 state.users = action.payload.data || []
+            })
+            .addCase(updateProfilePicture.fulfilled, (state, action) => {
+                state.data = action?.payload?.data
+                localStorage.setItem("data", JSON.stringify(action.payload.data));
             })
     },
 });
