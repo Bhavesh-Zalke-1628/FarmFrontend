@@ -9,9 +9,9 @@ import {
     User
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllProduct } from '../Redux/Slice/productSlice';
 import { Link } from 'react-router-dom';
 import AuthButtons from '../Component/Comman/AuthButtons';
+import { getAllProduct } from '../Redux/Slice/productSlice';
 
 const WEATHER_API_KEY = 'c0767a98c8629fa2703381c21cef3eb6';
 
@@ -32,15 +32,14 @@ function EnhancedFarmDashboard() {
     const dispatch = useDispatch();
     const { products = [] } = useSelector(state => state?.products || {});
     const { isLoggedIn } = useSelector(state => state?.auth)
+
+
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
-        ``
     }, []);
 
     useEffect(() => {
-
-
 
         const fetchData = async () => {
             setLoading(true);
@@ -134,6 +133,7 @@ function EnhancedFarmDashboard() {
             }
         });
 
+        dispatch(getAllProduct())
         return filtered;
     }, [products, searchTerm, filterCategory, sortBy]);
 
@@ -221,7 +221,7 @@ function EnhancedFarmDashboard() {
                     <div className="flex justify-between items-center lg:hidden mb-6">
                         <div className="flex items-center text-white">
                             <Leaf size={32} className="mr-2" />
-                            <span className="text-xl font-bold">FarmWeather</span>
+                            <span className="text-xl font-bold">Green Field</span>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="relative">
@@ -247,7 +247,7 @@ function EnhancedFarmDashboard() {
                                 <Leaf className="mr-4 text-green-300 animate-bounce" size={48} />
                                 <div>
                                     <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-white leading-none">
-                                        FarmWeather
+                                        GreenField
                                     </h1>
                                     <p className="text-lg lg:text-2xl font-light text-green-200 mt-2">
                                         Smart Agriculture Dashboard
@@ -812,10 +812,14 @@ function EnhancedFarmDashboard() {
                         {/* Load More Button */}
                         {filteredProducts.length > 0 && (
                             <div className="text-center mt-12">
-                                <button className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-2xl font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
-                                    Load More Products
-                                    <ArrowRight size={20} className="ml-2 inline" />
-                                </button>
+                                <Link
+                                    to='/products'
+                                >
+                                    <button className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-2xl font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
+                                        Load More Products
+                                        <ArrowRight size={20} className="ml-2 inline" />
+                                    </button>
+                                </Link>
                             </div>
                         )}
                     </div>

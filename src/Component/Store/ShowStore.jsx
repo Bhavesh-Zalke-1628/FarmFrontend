@@ -306,9 +306,6 @@ function ShowStore() {
                                                         )}
                                                         <div className="flex items-center space-x-4">
                                                             <p className="font-bold capitalize">Stock {!product.outOfStock ? 'In' : 'Out'}</p>
-                                                            {
-                                                                console.log(product?.outOfStock)
-                                                            }
 
                                                             <button
                                                                 onClick={() => toggleStock(product.outOfStock, product._id)}
