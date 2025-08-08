@@ -17,6 +17,7 @@ import {
     verifyOrderPayment
 } from '../../Redux/Slice/orderPaymentSlice';
 import { clearCart, fetchCart } from '../../Redux/Slice/cartSlice';
+import { createOrderDetails } from '../../Redux/Slice/orderDetailsSlice';
 
 // Reusable Address Form Component
 const AddressForm = ({
@@ -293,6 +294,8 @@ function OrderPayment() {
         localStorage.setItem('savedAddress', JSON.stringify(address));
     };
 
+    console.log("totalPrice", totalPrice)
+
     const handleCashPayment = async () => {
         try {
             setLoading(true);
@@ -311,8 +314,21 @@ function OrderPayment() {
                         confirmButton: 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition'
                     }
                 });
+                const data = {
+                    orderId: res.payload.data._id,
+                    orderPayment: 'cash',
+                    products: items,
+                    totalAmount: grandTotal,
+                    deliveryAddress: address,
+                    // totalDiscount,
+                    // shippingFee,
+                    // grandTotal,
+                    // totalQuantity,
+                    // netPrice,
+                }
 
                 dispatch(clearCart());
+                dispatch(createOrderDetails(data))
                 navigate('/order-summary', {
                     state: {
                         orderId: res.payload.data.orderId,

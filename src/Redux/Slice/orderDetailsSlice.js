@@ -1,6 +1,7 @@
 // src/redux/slices/orderDetailsSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../Helper/axiosInstance";
+import { data } from "react-router-dom";
 
 const initialState = {
     orders: [],
@@ -15,7 +16,9 @@ const initialState = {
 // Async Thunks
 export const createOrderDetails = createAsyncThunk(
     "orderDetails/createDetails",
+
     async (data, { rejectWithValue }) => {
+        console.log("data", data)
         try {
             const res = await axiosInstance.post("/order-details/create-order-details", data);
             return res.data?.data;

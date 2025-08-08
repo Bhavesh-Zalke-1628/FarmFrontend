@@ -46,7 +46,7 @@ const OrderSummary = ({
 
                     <div className="flex justify-between text-sm md:text-base">
                         <span className="text-gray-600">Net Price</span>
-                        <span className="font-medium">₹{netPrice}</span>
+                        <span className="font-medium">₹{netPrice.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between text-sm md:text-base">

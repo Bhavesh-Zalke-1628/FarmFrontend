@@ -256,7 +256,7 @@ function ShowStore() {
                                                         <img
                                                             src={product.img.secure_url}
                                                             alt={product.name}
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            className="w-full h-full object-fill transition-transform duration-500 group-hover:scale-105"
                                                         />
                                                     ) : (
                                                         <div className="flex items-center justify-center w-full h-full text-gray-400">
