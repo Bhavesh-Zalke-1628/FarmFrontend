@@ -18,21 +18,18 @@ import {
     Moon,
     ChevronDown,
     Sparkles,
-    Zap,
     TrendingUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutAccount } from "../Redux/Slice/authSlice";
 import ProductManagementPage from "./Product/ProductManagement";
-import Swal from "sweetalert2";
 import ShowStore from "../Component/Store/ShowStore";
 import DashboardOverview from "./DashboardOverview";
 import Profile from "./Profile";
 import OrdersPage from "./OrderPage";
 import { useLogout } from "../utils";
 
-// Sub-page components with enhanced styling
+// CropManagement subpage
 const CropManagement = () => (
     <div className="space-y-8 animate-fadeIn">
         <div className="flex items-center justify-between">
@@ -75,6 +72,7 @@ const CropManagement = () => (
     </div>
 );
 
+// EarningsReport subpage
 const EarningsReport = () => (
     <div className="space-y-8 animate-fadeIn">
         <div className="flex items-center justify-between">
@@ -97,30 +95,10 @@ const EarningsReport = () => (
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {[
-                {
-                    title: "Total Revenue",
-                    value: "$12,345",
-                    change: "+15%",
-                    color: "from-green-500 to-emerald-500",
-                },
-                {
-                    title: "Net Profit",
-                    value: "$8,230",
-                    change: "+8%",
-                    color: "from-blue-500 to-cyan-500",
-                },
-                {
-                    title: "Expenses",
-                    value: "$4,115",
-                    change: "-3%",
-                    color: "from-purple-500 to-pink-500",
-                },
-                {
-                    title: "Growth",
-                    value: "23%",
-                    change: "+12%",
-                    color: "from-yellow-500 to-orange-500",
-                },
+                { title: "Total Revenue", value: "$12,345", change: "+15%", color: "from-green-500 to-emerald-500" },
+                { title: "Net Profit", value: "$8,230", change: "+8%", color: "from-blue-500 to-cyan-500" },
+                { title: "Expenses", value: "$4,115", change: "-3%", color: "from-purple-500 to-pink-500" },
+                { title: "Growth", value: "23%", change: "+12%", color: "from-yellow-500 to-orange-500" },
             ].map((stat, index) => (
                 <div
                     key={index}
@@ -131,9 +109,7 @@ const EarningsReport = () => (
                     >
                         <DollarSign size={20} className="text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-1">
-                        {stat.title}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-1">{stat.title}</h3>
                     <p className="text-2xl font-bold text-gray-900 mb-2">{stat.value}</p>
                     <span className="text-sm text-green-600 font-medium">{stat.change}</span>
                 </div>
@@ -179,7 +155,6 @@ const NavItem = React.memo(
     )
 );
 
-
 function FarmerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(() =>
@@ -188,7 +163,6 @@ function FarmerDashboard() {
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [darkMode, setDarkMode] = useState(() => {
-        // Optional: persist theme preference
         const saved = localStorage.getItem("darkMode");
         return saved === "true" || false;
     });
@@ -199,7 +173,6 @@ function FarmerDashboard() {
     const cartItems = useSelector((state) => state.cart.items);
     const handleLogout = useLogout();
 
-    // Save dark mode to localStorage
     useEffect(() => {
         localStorage.setItem("darkMode", darkMode);
     }, [darkMode]);
@@ -272,8 +245,6 @@ function FarmerDashboard() {
     const secondaryNavItems = useMemo(
         () => [
             { icon: <User size={18} />, label: "Profile", tab: "profile" },
-            { icon: <Settings size={18} />, label: "Settings", onClick: () => { } },
-            { icon: <HelpCircle size={18} />, label: "Help", onClick: () => { } },
             { icon: <LogOut size={18} />, label: "Logout", onClick: handleLogout, danger: true },
         ],
         [handleLogout]
@@ -283,24 +254,14 @@ function FarmerDashboard() {
         <div className={`flex h-screen ${darkMode ? "dark" : ""}`}>
             {/* Background with animated gradients */}
             <div className="fixed inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 animate-gradient-shift" />
-            {/* <div
-                className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23059669\" fill-opacity=\"0.03\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"4\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"
-            aria-hidden="true"
-            /> */}
 
             {/* Sidebar */}
             <aside
                 className={`fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-green-800 via-green-700 to-emerald-800 text-white p-6 transform transition-all duration-500 ease-out backdrop-blur-xl border-r border-white/10
-        ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} md:relative md:translate-x-0 z-50`}
+                    ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} md:relative md:translate-x-0 z-50`}
                 aria-label="Sidebar Navigation"
             >
-                {/* Background patterns */}
                 <div className="absolute inset-0 bg-gradient-to-br from-green-600/20 to-emerald-600/20 backdrop-blur-sm" />
-                {/* <div
-                    className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"white\" fill-opacity=\"0.05\"%3E%3Cpath d=\"M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z\"/%3E%3C/g%3E%3C/svg%3E')]"
-                aria-hidden="true"
-                /> */}
-
                 <div className="relative flex flex-col h-full">
                     <div className="flex items-center justify-between mb-10">
                         <div className="flex items-center gap-3">
@@ -324,7 +285,6 @@ function FarmerDashboard() {
                         </button>
                     </div>
 
-                    {/* User Profile Section */}
                     <section
                         className="mb-8 p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20"
                         aria-label="User Profile"
@@ -343,7 +303,10 @@ function FarmerDashboard() {
                         </div>
                     </section>
 
-                    <nav className="flex-1 overflow-y-auto scrollbar-hide" aria-label="Main Navigation">
+                    <nav
+                        className="flex-1 overflow-y-auto scrollbar-hide"
+                        aria-label="Main Navigation"
+                    >
                         <div className="mb-6">
                             <h4 className="text-green-200 text-sm font-medium mb-3 uppercase tracking-wider">
                                 Main Menu
@@ -364,7 +327,10 @@ function FarmerDashboard() {
                         </div>
                     </nav>
 
-                    <nav className="pt-6 border-t border-white/20" aria-label="Account Navigation">
+                    <nav
+                        className="pt-6 border-t border-white/20"
+                        aria-label="Account Navigation"
+                    >
                         <h4 className="text-green-200 text-sm font-medium mb-3 uppercase tracking-wider">
                             Account
                         </h4>
@@ -395,12 +361,9 @@ function FarmerDashboard() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative" tabIndex={-1}>
-                {/* Top Navigation Bar */}
                 <header className="relative p-4 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg">
                     <div className="flex items-center justify-between">
-                        {/* Left Section */}
                         <div className="flex items-center gap-4">
-                            {/* Mobile Menu Button */}
                             <button
                                 className="p-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 md:hidden"
                                 onClick={() => setSidebarOpen(true)}
@@ -409,7 +372,6 @@ function FarmerDashboard() {
                                 <Menu size={20} />
                             </button>
 
-                            {/* Search Bar */}
                             <div className="relative hidden md:block">
                                 <Search
                                     size={18}
@@ -425,9 +387,7 @@ function FarmerDashboard() {
                             </div>
                         </div>
 
-                        {/* Right Section */}
                         <div className="flex items-center gap-4">
-                            {/* Theme Toggle */}
                             <button
                                 onClick={() => setDarkMode(!darkMode)}
                                 className="p-2 text-gray-600 hover:text-green-600 transition-colors duration-300 rounded-xl hover:bg-white/60"
@@ -436,7 +396,6 @@ function FarmerDashboard() {
                                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                             </button>
 
-                            {/* Notifications */}
                             <div className="relative">
                                 <button
                                     onClick={toggleNotifications}
@@ -474,7 +433,6 @@ function FarmerDashboard() {
                                 )}
                             </div>
 
-                            {/* Cart with Badge */}
                             <div className="relative">
                                 <button
                                     onClick={() => navigate("/cart")}
@@ -490,7 +448,6 @@ function FarmerDashboard() {
                                 </button>
                             </div>
 
-                            {/* Profile Dropdown */}
                             <div className="relative">
                                 <button
                                     onClick={toggleProfileDropdown}
@@ -516,14 +473,14 @@ function FarmerDashboard() {
                                 {showProfileDropdown && (
                                     <div
                                         id="profile-dropdown"
-                                        className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl py-2 z-50 border border-white/20 animate-slideDown"
+                                        className="absolute right-0 mt-2 w-56 bg-white/90 rounded-2xl shadow-2xl py-2 z-[9999] border border-white/20 animate-slideDown"
                                     >
-                                        <div className="px-4 py-3 border-b border-gray-100">
+                                        {/* <div className="px-4 py-3 border-b border-gray-100">
                                             <p className="font-semibold text-gray-800 capitalize">
                                                 {userData?.fullName || "User"}
                                             </p>
                                             <p className="text-sm text-gray-500">{userData?.email}</p>
-                                        </div>
+                                        </div> */}
                                         <button
                                             onClick={() => {
                                                 handleTabChange("profile");
@@ -559,8 +516,11 @@ function FarmerDashboard() {
                     </div>
                 </header>
 
-                {/* Main Content Area */}
-                <section className="flex-1 overflow-y-auto p-6 relative" tabIndex={-1} aria-live="polite">
+                <section
+                    className="flex-1 overflow-y-auto p-6 relative"
+                    tabIndex={-1}
+                    aria-live="polite"
+                >
                     <div className="max-w-7xl mx-auto">{renderContent}</div>
                 </section>
             </main>

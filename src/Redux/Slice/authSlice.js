@@ -138,7 +138,6 @@ export const updateProfile = createAsyncThunk("/update-profile", async (formData
 
 export const updateProfilePicture = createAsyncThunk("/update-profile-picture", async (formData, { rejectWithValue }) => {
 
-    console.log(formData)
     try {
         const res = await toast.promise(
             axiosInstance.patch("/users/update-profile-pic", formData),
@@ -149,7 +148,6 @@ export const updateProfilePicture = createAsyncThunk("/update-profile-picture", 
             }
         );
 
-        console.log(res)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Failed to update profile");

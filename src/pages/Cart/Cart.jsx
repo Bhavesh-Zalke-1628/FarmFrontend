@@ -92,6 +92,7 @@ const EmptyCart = React.memo(() => (
 
 // Cart item row
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
+
     const discountedPrice = useMemo(
         () => calculateDiscountedPrice(item.price, item.offerPercentage, item.quantity),
         [item.price, item.offerPercentage, item.quantity]
@@ -175,11 +176,11 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
 });
 
 // Items list
-const CartItems = React.memo(({ items, onIncrement, onDecrement, onRemove }) => (
+const CartItems = ({ items, onIncrement, onDecrement, onRemove }) => (
     <div className="space-y-3 sm:space-y-4">
         {items.map((item) => (
             <CartItem
-                key={item.productId}
+                // key={item.productId}
                 item={item}
                 onIncrement={onIncrement}
                 onDecrement={onDecrement}
@@ -187,7 +188,7 @@ const CartItems = React.memo(({ items, onIncrement, onDecrement, onRemove }) => 
             />
         ))}
     </div>
-));
+);
 
 function Cart() {
     const navigate = useNavigate();
@@ -206,6 +207,7 @@ function Cart() {
         netPrice,
         error
     } = cartState;
+
 
     // Handle increment/decrement/remove actions
     const handleIncrement = useCallback(async (productId) => {
@@ -234,7 +236,7 @@ function Cart() {
                 dispatch(localRemoveFromCart(productId));
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }, [dispatch, isLoggedIn]);
 
@@ -274,10 +276,10 @@ function Cart() {
 
     // ** Fetch cart from backend if user is logged in and status is "idle" **
     useEffect(() => {
-        if (isLoggedIn && status === 'idle') {
+        if (isLoggedIn) {
             dispatch(fetchCart());
         }
-    }, [dispatch, isLoggedIn, status]);
+    }, [dispatch, isLoggedIn]);
 
     // On purchase, validate that all items are available.
     const handlePurchase = useCallback(() => {

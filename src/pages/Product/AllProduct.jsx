@@ -91,7 +91,7 @@ function AllProduct() {
     // --- UI ---
     return (
         <Layout>
-            <div className="p-5 max-w-7xl mx-auto">
+            <div className=" max-w-7xl mx-auto pb-10">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Explore Our Products</h1>
 
                 {/* (Optional) Show total results */}

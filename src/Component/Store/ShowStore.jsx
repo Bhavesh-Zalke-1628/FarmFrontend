@@ -114,14 +114,11 @@ function ShowStore() {
 
     const toggleStock = useCallback(async (status, productId) => {
 
-        console.log(status, productId)
 
         const res = await dispatch(changeStockStatus(productId));
 
-        console.log("res", res)
         const updatedStatus = res?.payload?.updatedProduct?.outOfStock;
 
-        console.log(updatedStatus)
 
         if (!updatedStatus) {
             const { value: quantity } = await Swal.fire({

@@ -86,12 +86,13 @@ import {
     Camera,
     Shield,
     Loader2,
-    Upload
+    Upload,
+    LucideLogOut
 } from 'lucide-react';
 import EditProfileModal from '../Component/Modal/EditProfileModal';
 import { updateProfilePicture } from '../Redux/Slice/authSlice';
 import { useState } from 'react';
-
+import { useLogout } from '../utils';
 function Profile() {
     const { data: userData, loading } = useSelector((state) => state.auth);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,8 +100,7 @@ function Profile() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const dispatch = useDispatch();
-
-    console.log("userData", userData);
+    const handleLogout = useLogout()
 
     const getImage = async (event) => {
         const uploadedImage = event.target.files[0];
@@ -190,7 +190,7 @@ function Profile() {
                                         <img
                                             src={profilePic || userData?.profile?.secure_url}
                                             alt="Profile"
-                                            className={`w-32 h-32 rounded-full object-cover shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 ${isUploading ? 'opacity-50' : ''
+                                            className={`w-32 h-32 rounded-full  shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 ${isUploading ? 'opacity-50' : ''
                                                 }`}
                                         />
                                     ) : (
@@ -308,11 +308,32 @@ function Profile() {
                     <div className="lg:w-2/3 space-y-6">
                         {/* Personal Information Card */}
                         <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                    <User size={20} className="text-white" />
+                            <div className="flex items-center gap-3 mb-6 justify-between">
+                                <div className=' flex items-center gap-1'>
+                                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <User size={20} className="text-white" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-800">Personal Information</h3>
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-800">Personal Information</h3>
+
+
+                                <button
+                                    onClick={handleLogout}
+                                    disabled={isUploading}
+                                    className={` px-3 py-3 
+                                            bg-gradient-to-r from-blue-600 to-indigo-700 
+                                            text-white rounded-xl 
+                                            hover:from-blue-500 hover:to-red-600 
+                                            ease-in-out transition-all duration-300 
+                                            font-medium shadow-lg 
+                                            hover:shadow-xl transform hover:-translate-y-0.5 
+                                            flex items-center justify-center gap-2 
+                                            ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <LucideLogOut />
+                                    Log Out
+                                </button>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -417,6 +438,7 @@ function Profile() {
                                     <p className="text-purple-600 font-bold text-xl">2024</p>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

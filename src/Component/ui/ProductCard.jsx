@@ -52,7 +52,7 @@ const ProductCardItem = ({ product, handleProductClick, isLoggedIn }) => {
                 )}
             </div>
             <div className="p-4 flex-1 flex flex-col">
-                <h3 className="text-lg font-semibold text-gray-800 truncate">{product.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-800 truncate capitalize">{product.name}</h3>
                 <p className="text-sm text-gray-600 mt-1 line-clamp-2 flex-grow">{product.description}</p>
                 <p className="text-sm text-gray-600 mt-1">Stock: {product.quantity}</p>
                 <div className="flex items-center gap-2 mt-2 mb-2">

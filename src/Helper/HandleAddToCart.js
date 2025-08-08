@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
-const useAddToCart = (onAddToCart, onClose = () => { }) => {
+const useAddToCart = (product, onClose = () => { }) => {
+    const dispatch = useDispatch();
     const { isLoggedIn } = useSelector(state => state?.auth || {});
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async (e) => {
+        if (e) e.stopPropagation(); // Prevent event bubbling if event is provided
+
         if (!isLoggedIn) {
             Swal.fire({
                 icon: 'info',
@@ -25,7 +28,7 @@ const useAddToCart = (onAddToCart, onClose = () => { }) => {
 
         try {
             setLoading(true);
-            await onAddToCart(); // Must be a Promise
+            await dispatch(addToCart(product)); // Assuming addToCart is an async thunk
             Swal.fire({
                 icon: 'success',
                 title: 'Added!',
@@ -35,7 +38,7 @@ const useAddToCart = (onAddToCart, onClose = () => { }) => {
             });
             onClose();
         } catch (err) {
-            console.error(err);
+            console.error('Add to cart error:', err);
             Swal.fire({
                 icon: 'error',
                 title: 'Oops!',

@@ -91,6 +91,7 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async (_, { rejectWi
     try {
         const res = await axiosInstance.get("/cart");
         return res.data;
+
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Failed to fetch cart");
     }
@@ -210,8 +211,7 @@ const cartSlice = createSlice({
                 recalculateTotals(state);
             }
         },
-        localClearCart(state) {
-            state.items = [];
+        localClearCart(state) {            state.items = [];
             recalculateTotals(state);
         },
         applyCoupon(state, action) {
@@ -226,6 +226,7 @@ const cartSlice = createSlice({
                 state.status = "loading";
             })
             .addCase(fetchCart.fulfilled, (state, action) => {
+
                 const cart = action.payload?.data?.cart;
                 state.items = cart?.items || [];
                 recalculateTotals(state);
@@ -235,6 +236,7 @@ const cartSlice = createSlice({
                 state.status = "failed";
                 state.error = action.payload;
             })
+
             .addCase(addToCart.fulfilled, (state, action) => {
                 const product = action.payload;
                 const existingItem = state.items.find(item => item.productId === product.productId);
@@ -250,11 +252,13 @@ const cartSlice = createSlice({
                 }
                 recalculateTotals(state);
             })
+
             .addCase(removeFromCart.fulfilled, (state, action) => {
                 const { productId } = action.payload;
                 state.items = state.items.filter(item => item.productId !== productId);
                 recalculateTotals(state);
             })
+
             .addCase(updateCartItemQuantity.fulfilled, (state, action) => {
                 const { productId, quantity } = action.payload;
                 const item = state.items.find(item => item.productId === productId);

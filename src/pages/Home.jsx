@@ -637,10 +637,6 @@ function EnhancedFarmDashboard() {
                                 </div>
                             </div>
                         </div>
-                        {
-                            console.log("bhavesh")
-                        }
-                        {console.log(filteredProducts)}
                         {/* Products Grid/List */}
                         <div className={`grid gap-6 ${viewMode === 'grid'
                             ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
@@ -775,7 +771,6 @@ function EnhancedFarmDashboard() {
                                         {/* Action Buttons */}
                                         <div className="flex gap-3">
                                             <button
-                                                onClick={() => console.log('Navigate to product', product._id)}
                                                 disabled={product.outOfStock}
                                                 className={`flex-1 py-3 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${product.outOfStock
                                                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
