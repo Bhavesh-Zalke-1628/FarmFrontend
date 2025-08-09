@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import AuthButtons from '../Component/Comman/AuthButtons';
 import { getAllProduct } from '../Redux/Slice/productSlice';
+import { getAllCrops } from '../Redux/Slice/cropsSlice';
 
 const WEATHER_API_KEY = 'c0767a98c8629fa2703381c21cef3eb6';
 
@@ -32,9 +33,10 @@ function EnhancedFarmDashboard() {
     const dispatch = useDispatch();
     const { products = [] } = useSelector(state => state?.products || {});
     const { isLoggedIn } = useSelector(state => state?.auth)
-
+    const { crops } = useSelector(state => state?.crops)
 
     useEffect(() => {
+        dispatch(getAllCrops())
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -201,6 +203,9 @@ function EnhancedFarmDashboard() {
             </div>
         </div>
     );
+
+
+    const COLORS = ["#10b981", "#22c55e", "#34d399", "#4ade80"];
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/20">
@@ -452,41 +457,62 @@ function EnhancedFarmDashboard() {
                             </div>
 
                             {/* Crop Performance Chart */}
-                            <div className="bg-white rounded-3xl shadow-xl p-6 lg:p-8 border border-gray-100">
-                                <h2 className="text-xl lg:text-2xl font-bold text-gray-800 flex items-center mb-6">
-                                    <Package className="mr-3 text-green-600" />
-                                    Crop Performance
-                                </h2>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={cropData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={100}
-                                            paddingAngle={5}
-                                            dataKey="yield"
-                                        >
-                                            {cropData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="mt-4 space-y-2">
-                                    {cropData.map((crop, index) => (
-                                        <div key={index} className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: crop.color }}></div>
-                                                <span className="text-sm font-medium text-gray-700">{crop.name}</span>
+                            {
+
+                                isLoggedIn &&
+                                <div className="bg-white rounded-3xl shadow-xl p-6 lg:p-8 border border-gray-100">
+                                    <h2 className="text-xl lg:text-2xl font-bold text-gray-800 flex items-center mb-6">
+                                        <Package className="mr-3 text-green-600" />
+                                        Crop Performance
+                                    </h2>
+                                    {crops?.length > 0 ? (
+                                        <>
+                                            <ResponsiveContainer width="100%" height={300}>
+                                                <PieChart>
+                                                    <Pie
+                                                        data={crops}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={60}
+                                                        outerRadius={100}
+                                                        paddingAngle={5}
+                                                        dataKey="quantity"
+                                                    >
+
+                                                        {crops.map((entry, index) => (
+                                                            <Cell
+                                                                key={`cell-${index}`}
+                                                                fill={COLORS[index % COLORS.length]}
+                                                            />
+                                                        ))}
+
+                                                    </Pie>
+                                                    <Tooltip />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                            <div className="mt-4 space-y-2">
+                                                {crops.map((crop, index) => (
+                                                    <div key={index} className="flex items-center justify-between">
+                                                        <div className="flex items-center">
+                                                            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: crop.color }}></div>
+                                                            <span className="text-sm font-medium text-gray-700">{crop.name}</span>
+                                                        </div>
+                                                        <span className="text-sm font-bold text-gray-900">{crop.quantity} acr</span>
+                                                    </div>
+                                                ))}
                                             </div>
-                                            <span className="text-sm font-bold text-gray-900">{crop.yield}%</span>
-                                        </div>
-                                    ))}
+                                        </>
+
+                                    ) : (
+                                        <>
+                                            <p>No crops Register </p>
+                                        </>
+                                    )}
+
                                 </div>
-                            </div>
+
+                            }
+
                         </div>
 
                         {/* Enhanced Recommendations with Priority System */}

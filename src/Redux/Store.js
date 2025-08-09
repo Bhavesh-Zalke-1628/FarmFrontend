@@ -73,6 +73,7 @@ import productSlice from './Slice/productSlice';
 import cartSlice from './Slice/cartSlice';
 import orderPaymentSlice from "./Slice/orderPaymentSlice";
 import farmSlice from './Slice/farmSlice';
+import cropsSlice from './Slice/cropsSlice'
 
 
 const store = configureStore({
@@ -83,7 +84,8 @@ const store = configureStore({
         products: productSlice,
         cart: cartSlice,
         order: orderPaymentSlice,
-        farm: farmSlice
+        farm: farmSlice,
+        crops: cropsSlice
     },
     devTools: true
 })

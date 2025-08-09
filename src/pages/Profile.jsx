@@ -1,80 +1,3 @@
-// import React, { useState } from 'react';
-// import { useSelector } from 'react-redux';
-// import { User } from 'lucide-react';
-// import EditProfileModal from '../Component/Modal/EditProfileModal'
-
-// function Profile() {
-//     const { data: userData } = useSelector((state) => state.auth);
-//     const [isModalOpen, setIsModalOpen] = useState(false);
-
-//     return (
-//         <div className="flex flex-col md:flex-row gap-8">
-//             <div className="md:w-1/3">
-//                 <div className="flex flex-col items-center">
-//                     <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-//                         <User size={48} className="text-gray-400" />
-//                     </div>
-//                     <h2 className="text-xl font-bold">{userData?.fullName || "User"}</h2>
-//                     <p className="text-gray-500">{userData?.email || "user@example.com"}</p>
-//                 </div>
-//             </div>
-
-//             <div className="md:w-2/3">
-//                 <div className="space-y-4">
-//                     <div>
-//                         <h3 className="font-medium text-gray-700">Personal Information</h3>
-//                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-//                             <div>
-//                                 <label className="block text-sm text-gray-500">Full Name</label>
-//                                 <p className="mt-1">{userData?.fullName || "Not provided"}</p>
-//                             </div>
-//                             <div>
-//                                 <label className="block text-sm text-gray-500">Email</label>
-//                                 <p className="mt-1">{userData?.email || "Not provided"}</p>
-//                             </div>
-//                             <div>
-//                                 <label className="block text-sm text-gray-500">Phone</label>
-//                                 <p className="mt-1">{userData?.mobileNumber || "Not provided"}</p>
-//                             </div>
-//                             <div>
-//                                 <label className="block text-sm text-gray-500">Account Type</label>
-//                                 <p className="mt-1 capitalize">{userData?.role || "farmer"}</p>
-//                             </div>
-//                             <div>
-//                                 <label className="block text-sm text-gray-500"> Address</label>
-//                                 <p className="mt-1 capitalize">{userData?.address || "Not Provided"}</p>
-//                             </div>
-//                         </div>
-//                     </div>
-
-//                     <div>
-//                         <h3 className="font-medium text-gray-700">Farm Information</h3>
-//                         <div className="mt-2 space-y-2">
-//                             <p className="text-gray-600">Farm Name: {userData?.farm?.farmName || "Not provided"}</p>
-//                             <p className="text-gray-600">Location: {userData?.farm?.location || "Not provided"}</p>
-//                         </div>
-//                     </div>
-
-//                     <button
-//                         onClick={() => setIsModalOpen(true)}
-//                         className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-//                     >
-//                         Edit Profile
-//                     </button>
-//                 </div>
-//             </div>
-
-//             {isModalOpen && (
-//                 <EditProfileModal
-//                     initialData={userData}
-//                     onClose={() => setIsModalOpen(false)}
-//                 />
-//             )}
-//         </div>
-//     );
-// }
-
-// export default Profile;import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     User,
@@ -87,20 +10,30 @@ import {
     Shield,
     Loader2,
     Upload,
-    LucideLogOut
+    LogOut,
+    Sprout,
+    Calendar,
+    TrendingUp,
+    Award,
+    Settings
 } from 'lucide-react';
 import EditProfileModal from '../Component/Modal/EditProfileModal';
 import { updateProfilePicture } from '../Redux/Slice/authSlice';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLogout } from '../utils';
+import { getAllCrops } from '../Redux/Slice/cropsSlice';
+import CropList from '../Component/Crops/CropList';
+
 function Profile() {
     const { data: userData, loading } = useSelector((state) => state.auth);
+    const { crops } = useSelector(state => state?.crops);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [profilePic, setProfilePic] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const dispatch = useDispatch();
-    const handleLogout = useLogout()
+    const handleLogout = useLogout();
 
     const getImage = async (event) => {
         const uploadedImage = event.target.files[0];
@@ -168,285 +101,237 @@ function Profile() {
         clearInterval(progressInterval);
     };
 
+    useEffect(() => {
+        dispatch(getAllCrops());
+    }, [dispatch]);
+
+    // Calculate total acres
+    const totalAcres = crops?.reduce((total, crop) => total + (parseFloat(crop.quantity) || 0), 0) || 0;
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 p-4 md:p-8">
-            {/* Header Section */}
-            <div className="max-w-6xl mx-auto mb-8">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                        Profile Dashboard
-                    </h1>
-                    <p className="text-gray-600 text-lg">Manage your account and farm information</p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+            {/* Header */}
+            <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-xl">
+                                <User className="w-8 h-8 text-green-600" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Profile Dashboard</h1>
+                                <p className="text-gray-600">Manage your farm and account</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Profile Card */}
-                    <div className="lg:w-1/3">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex flex-col items-center text-center">
-                                {/* Profile Image with Hover Effect and Loader */}
-                                <div className="relative group mb-6">
-                                    {userData?.profile ? (
-                                        <img
-                                            src={profilePic || userData?.profile?.secure_url}
-                                            alt="Profile"
-                                            className={`w-32 h-32 rounded-full  shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 ${isUploading ? 'opacity-50' : ''
-                                                }`}
-                                        />
-                                    ) : (
-                                        <div className={`w-32 h-32 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 ${isUploading ? 'opacity-50' : ''
-                                            }`}>
-                                            <User size={48} className="text-white" />
-                                        </div>
-                                    )}
-
-                                    {/* Upload Loader Overlay */}
-                                    {isUploading && (
-                                        <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex flex-col items-center justify-center">
-                                            <div className="relative">
-                                                <Loader2 size={32} className="text-white animate-spin mb-2" />
-                                                <div className="text-white text-xs font-medium">
-                                                    {uploadProgress}%
-                                                </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Sidebar - Profile Card */}
+                    <div className="lg:col-span-4 space-y-6">
+                        {/* Profile Info Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-24"></div>
+                            <div className="relative px-6 pb-6">
+                                {/* Profile Picture */}
+                                <div className="relative -mt-12 mb-4">
+                                    <div className="relative group">
+                                        {userData?.profile ? (
+                                            <img
+                                                src={profilePic || userData?.profile?.secure_url}
+                                                alt="Profile"
+                                                className={`w-24 h-24 rounded-full border-4 border-white shadow-lg ${isUploading ? 'opacity-50' : ''
+                                                    }`}
+                                            />
+                                        ) : (
+                                            <div className={`w-24 h-24 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center border-4 border-white shadow-lg ${isUploading ? 'opacity-50' : ''
+                                                }`}>
+                                                <User size={32} className="text-white" />
                                             </div>
-                                            {/* Progress Ring */}
-                                            <div className="absolute inset-0 rounded-full">
-                                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                                    <circle
-                                                        cx="50"
-                                                        cy="50"
-                                                        r="45"
-                                                        stroke="rgba(255,255,255,0.2)"
-                                                        strokeWidth="3"
-                                                        fill="none"
-                                                    />
-                                                    <circle
-                                                        cx="50"
-                                                        cy="50"
-                                                        r="45"
-                                                        stroke="white"
-                                                        strokeWidth="3"
-                                                        fill="none"
-                                                        strokeDasharray={`${2 * Math.PI * 45}`}
-                                                        strokeDashoffset={`${2 * Math.PI * 45 * (1 - uploadProgress / 100)}`}
-                                                        className="transition-all duration-300"
-                                                    />
-                                                </svg>
+                                        )}
+
+                                        {/* Upload Overlay */}
+                                        {isUploading && (
+                                            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+                                                <Loader2 size={20} className="text-white animate-spin" />
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Hidden File Input */}
-                                    <input
-                                        name='profilePic'
-                                        type="file"
-                                        id="profile-picture-upload"
-                                        accept="image/*"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 rounded-full"
-                                        onChange={getImage}
-                                        disabled={isUploading}
-                                    />
-
-                                    {/* Camera Overlay */}
-                                    {!isUploading && (
-                                        <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 cursor-pointer pointer-events-none">
-                                            <div className="flex flex-col items-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                <Camera size={28} className="mb-1" />
-                                                <span className="text-xs font-medium">Change Photo</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Upload Status Message */}
-                                {isUploading && (
-                                    <div className="mb-4 px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium flex items-center gap-2">
-                                        <Upload size={16} className="animate-bounce" />
-                                        Uploading profile picture...
+                                        {/* Camera Button */}
+                                        <label className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors">
+                                            <Camera size={14} className="text-white" />
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={getImage}
+                                                disabled={isUploading}
+                                                className="hidden"
+                                            />
+                                        </label>
                                     </div>
-                                )}
+                                </div>
 
                                 {/* User Info */}
-                                <h2 className="text-2xl font-bold text-gray-800 mb-2 capitalize">
-                                    {userData?.fullName || 'Welcome User'}
-                                </h2>
-                                <p className="text-gray-500 mb-4 flex items-center gap-2">
-                                    <Mail size={16} />
-                                    {userData?.email || 'user@example.com'}
-                                </p>
-
-                                {/* Role Badge */}
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-blue-100 rounded-full text-sm font-medium text-green-700 mb-6">
-                                    <Shield size={16} />
-                                    <span className="capitalize">{userData?.role || 'farmer'}</span>
+                                <div className="text-center mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1 capitalize">
+                                        {userData?.fullName || 'Welcome User'}
+                                    </h2>
+                                    <p className="text-gray-600 text-sm mb-2">
+                                        {userData?.email || 'user@example.com'}
+                                    </p>
+                                    <div className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                        <Shield size={12} />
+                                        {userData?.role || 'Farmer'}
+                                    </div>
                                 </div>
 
-                                {/* Edit Button */}
+                                {/* Edit Profile Button */}
                                 <button
                                     onClick={() => setIsModalOpen(true)}
                                     disabled={isUploading}
-                                    className={`w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
+                                    className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                                 >
-                                    {isUploading ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Updating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Edit3 size={18} />
-                                            Edit Profile
-                                        </>
-                                    )}
+                                    <Edit3 size={16} />
+                                    Edit Profile
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <Sprout className="w-5 h-5 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-600">Total Crops</p>
+                                            <p className="font-semibold text-gray-900">{crops?.length || 0}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <TrendingUp className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-600">Total Area</p>
+                                            <p className="font-semibold text-gray-900">{totalAcres.toFixed(1)} Acres</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <Award className="w-5 h-5 text-purple-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-600">Status</p>
+                                            <p className="font-semibold text-green-600">Active</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Information Cards */}
-                    <div className="lg:w-2/3 space-y-6">
-                        {/* Personal Information Card */}
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-6 justify-between">
-                                <div className=' flex items-center gap-1'>
-                                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                        <User size={20} className="text-white" />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-800">Personal Information</h3>
-                                </div>
-
-
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Personal Information */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
                                 <button
-                                    onClick={handleLogout}
-                                    disabled={isUploading}
-                                    className={` px-3 py-3 
-                                            bg-gradient-to-r from-blue-600 to-indigo-700 
-                                            text-white rounded-xl 
-                                            hover:from-blue-500 hover:to-red-600 
-                                            ease-in-out transition-all duration-300 
-                                            font-medium shadow-lg 
-                                            hover:shadow-xl transform hover:-translate-y-0.5 
-                                            flex items-center justify-center gap-2 
-                                            ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-green-600 transition-colors"
                                 >
-                                    <LucideLogOut />
-                                    Log Out
+                                    <Settings size={16} />
+                                    Edit
                                 </button>
-
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="group">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                                        Full Name
-                                    </label>
-                                    <p className="capitalize text-lg text-gray-800 font-medium group-hover:text-green-600 transition-colors duration-200">
-                                        {userData?.fullName || 'Not provided'}
-                                    </p>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
+                                    <p className="text-gray-900 capitalize">{userData?.fullName || 'Not provided'}</p>
                                 </div>
 
-                                <div className="group">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-2">
-                                        <Mail size={14} />
-                                        Email
-                                    </label>
-                                    <p className="text-lg text-gray-800 font-medium group-hover:text-blue-600 transition-colors duration-200">
-                                        {userData?.email || 'Not provided'}
-                                    </p>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                                    <p className="text-gray-900">{userData?.email || 'Not provided'}</p>
                                 </div>
 
-                                <div className="group">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-2">
-                                        <Phone size={14} />
-                                        Phone
-                                    </label>
-                                    <p className="text-lg text-gray-800 font-medium group-hover:text-purple-600 transition-colors duration-200">
-                                        {userData?.mobileNumber || 'Not provided'}
-                                    </p>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
+                                    <p className="text-gray-900">{userData?.mobileNumber || 'Not provided'}</p>
                                 </div>
 
-                                <div className="group">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-2">
-                                        <MapPin size={14} />
-                                        Address
-                                    </label>
-                                    <p className="text-lg text-gray-800 font-medium group-hover:text-indigo-600 transition-colors duration-200 capitalize">
-                                        {userData?.address || 'Not provided'}
-                                    </p>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
+                                    <p className="text-gray-900 capitalize">{userData?.address || 'Not provided'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Farm Information Card */}
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                                    <Home size={20} className="text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-800">Farm Information</h3>
-                            </div>
+                        {/* Farm Information */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Farm Information</h3>
 
-                            <div className="space-y-6">
-                                <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100 hover:border-green-200 transition-colors duration-200">
-                                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex items-start gap-4 p-4 bg-green-50 rounded-xl">
+                                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <Home size={20} className="text-white" />
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-gray-800 mb-1">Farm Name</h4>
-                                        <p className="text-gray-600 text-lg">{userData?.farm?.farmName || 'Not provided'}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="font-medium text-gray-900 mb-1">Farm Name</h4>
+                                        <p className="text-gray-600 text-sm">{userData?.farm?.farmName || 'Not provided'}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 hover:border-blue-200 transition-colors duration-200">
-                                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl">
+                                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <MapPin size={20} className="text-white" />
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-gray-800 mb-1">Location</h4>
-                                        <p className="text-gray-600 text-lg">{userData?.farm?.location || 'Not provided'}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="font-medium text-gray-900 mb-1">Location</h4>
+                                        <p className="text-gray-600 text-sm">{userData?.farm?.location || 'Not provided'}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Quick Stats Card */}
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-300">
-                            <h3 className="text-2xl font-bold text-gray-800 mb-6">Quick Stats</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="text-center p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100 hover:border-green-200 transition-all duration-300 hover:transform hover:scale-105">
-                                    <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <Home size={24} className="text-white" />
-                                    </div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">Profile</h4>
-                                    <p className="text-green-600 font-bold text-xl">Active</p>
-                                </div>
-
-                                <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 hover:border-blue-200 transition-all duration-300 hover:transform hover:scale-105">
-                                    <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <Shield size={24} className="text-white" />
-                                    </div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">Verification</h4>
-                                    <p className="text-blue-600 font-bold text-xl">Verified</p>
-                                </div>
-
-                                <div className="text-center p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100 hover:border-purple-200 transition-all duration-300 hover:transform hover:scale-105">
-                                    <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <User size={24} className="text-white" />
-                                    </div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">Member Since</h4>
-                                    <p className="text-purple-600 font-bold text-xl">2024</p>
-                                </div>
+                        {/* Crops Section */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                                <CropList crops={crops} />
                             </div>
-
-                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Modal */}
             {isModalOpen && (
-                <EditProfileModal initialData={userData} onClose={() => setIsModalOpen(false)} />
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <EditProfileModal
+                            initialData={userData}
+                            onClose={() => setIsModalOpen(false)}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );
