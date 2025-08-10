@@ -3,39 +3,43 @@ import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import CropForm from "./CropForm";
 import { Edit, Trash, Plus, Sprout } from "lucide-react";
-import { addCrop, deleteCrop, getAllCrops, updateCrop } from "../../Redux/Slice/cropsSlice";
+import { addCrop, deleteCrop, updateCrop, getAllCrops } from "../../Redux/Slice/cropsSlice";
 
 function CropList({ crops }) {
     const dispatch = useDispatch();
     const [showForm, setShowForm] = useState(false);
     const [editingCrop, setEditingCrop] = useState(null);
 
+    // ---- Open Add Form ----
     const openAddForm = () => {
         setEditingCrop(null);
         setShowForm(true);
     };
 
+    // ---- Open Edit Form ----
     const openEditForm = (crop) => {
         setEditingCrop(crop);
         setShowForm(true);
     };
 
+    // ---- Close Form ----
     const closeForm = () => {
         setShowForm(false);
         setEditingCrop(null);
     };
 
-    const handleSubmit = (data) => {
+    // ---- Handle Form Submit (Add or Edit) ----
+    const handleSubmit = async (data) => {
         if (editingCrop) {
-            dispatch(updateCrop({ id: editingCrop._id, data }));
-            dispatch(getAllCrops());
+            await dispatch(updateCrop({ id: editingCrop._id, data }));
         } else {
-            dispatch(addCrop(data));
-            dispatch(getAllCrops());
+            await dispatch(addCrop(data));
         }
+        dispatch(getAllCrops()); // Refresh list after changes
         closeForm();
     };
 
+    // ---- Handle Delete with Confirmation ----
     const handleDelete = (id) => {
         Swal.fire({
             title: "Are you sure?",
@@ -51,9 +55,10 @@ function CropList({ crops }) {
                 confirmButton: 'rounded-lg px-6 py-2',
                 cancelButton: 'rounded-lg px-6 py-2'
             }
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                dispatch(deleteCrop(id));
+                await dispatch(deleteCrop(id));
+                dispatch(getAllCrops()); // Refresh list after delete
                 Swal.fire({
                     title: "Deleted!",
                     text: "The crop has been deleted successfully.",
@@ -69,7 +74,8 @@ function CropList({ crops }) {
 
     return (
         <div className="max-w-7xl mx-auto px-2 sm:px-6 py-6 space-y-8">
-            {/* Header Section */}
+
+            {/* ---------- Header ---------- */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-2">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-xl">
@@ -93,7 +99,7 @@ function CropList({ crops }) {
                 </button>
             </div>
 
-            {/* Empty State */}
+            {/* ---------- Empty State ---------- */}
             {crops.length === 0 && (
                 <div className="text-center py-8 sm:py-16">
                     <div className="mx-auto w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
@@ -115,29 +121,15 @@ function CropList({ crops }) {
                 </div>
             )}
 
-            {/* Crop Grid */}
+            {/* ---------- Crop Grid ---------- */}
             {crops.length > 0 && (
-                <div
-                    className="
-            grid gap-4 sm:gap-6
-            grid-cols-1
-            xs:grid-cols-2
-            sm:grid-cols-2
-            md:grid-cols-3
-            xl:grid-cols-4
-            overflow-x-auto
-            "
-                >
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 overflow-x-auto">
                     {crops.map((crop, index) => (
                         <div
                             key={crop._id || index}
-                            className="
-                group relative bg-white rounded-2xl border border-gray-200
-                hover:border-green-300 shadow-sm hover:shadow-lg transition-all duration-300
-                overflow-hidden flex flex-col min-w-0 w-full
-              "
+                            className="group relative bg-white rounded-2xl border border-gray-200 hover:border-green-300 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-w-0 w-full"
                         >
-                            {/* Card Header */}
+                            {/* Card Content */}
                             <div className="p-4 sm:p-6 pb-3 flex-1 flex flex-col justify-between">
                                 <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1 min-w-0">
@@ -149,25 +141,8 @@ function CropList({ crops }) {
                                             <span className="text-xs sm:text-sm text-gray-600">Active</span>
                                         </div>
                                     </div>
-                                    {/* Action Buttons - always visible on touch devices */}
-                                    <div className="flex gap-1 ml-2">
-                                        <button
-                                            onClick={() => openEditForm(crop)}
-                                            className="p-1.5 sm:p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
-                                            title="Edit crop"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(crop._id)}
-                                            className="p-1.5 sm:p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                                            title="Delete crop"
-                                        >
-                                            <Trash className="w-4 h-4" />
-                                        </button>
-                                    </div>
                                 </div>
-                                {/* Quantity Display */}
+                                {/* Quantity */}
                                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 sm:p-4 mt-2">
                                     <div className="text-center">
                                         <p className="text-xl sm:text-2xl font-bold text-green-700">
@@ -177,21 +152,32 @@ function CropList({ crops }) {
                                     </div>
                                 </div>
                             </div>
-                            {/* Card Footer */}
-                            <div className="px-4 sm:px-6 pb-3 mt-auto">
-                                <div className="flex items-center justify-between text-xs text-gray-500">
-                                    <span>Updated recently</span>
-                                    <span>#{String(index + 1).padStart(3, '0')}</span>
+
+                            {/* Hover Actions */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none sm:pointer-events-auto">
+                                <div className="flex gap-1 ml-5 mt-2">
+                                    <button
+                                        onClick={() => openEditForm(crop)}
+                                        className="p-1.5 sm:p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
+                                        title="Edit crop"
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(crop._id)}
+                                        className="p-1.5 sm:p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                                        title="Delete crop"
+                                    >
+                                        <Trash className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
-                            {/* Hover Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Statistics Summary */}
+            {/* ---------- Summary Stats ---------- */}
             {crops.length > 0 && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 sm:p-6 border border-green-100">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Summary</h3>
@@ -218,7 +204,7 @@ function CropList({ crops }) {
                 </div>
             )}
 
-            {/* Form Modal */}
+            {/* ---------- Form Modal ---------- */}
             {showForm && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
                     <div className="bg-white rounded-2xl w-full max-w-xs sm:max-w-md max-h-[95vh] overflow-y-auto shadow-xl">

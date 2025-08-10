@@ -5,8 +5,9 @@ import {
     Sun, Cloud, CloudSnow, Zap, ShoppingCart, Star, TrendingUp, Leaf,
     Users, Award, ArrowRight, RefreshCw, AlertCircle, Heart, Filter,
     Search, Bell, Settings, Menu, X, ChevronDown, Grid, List, Package,
-    Truck, Shield, Clock, Phone, Mail, Globe, ChevronRight,
-    User
+    Truck, Shield, Clock, Phone, Mail, Globe, ChevronRight, User, ShoppingBagIcon,
+    ShoppingBasket,
+    ShoppingCartIcon
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -207,6 +208,7 @@ function EnhancedFarmDashboard() {
 
     const COLORS = ["#10b981", "#22c55e", "#34d399", "#4ade80"];
 
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/20">
             {/* Enhanced Mobile-First Header */}
@@ -318,7 +320,7 @@ function EnhancedFarmDashboard() {
                             {[
                                 { id: 'overview', label: 'Overview', icon: Thermometer },
                                 { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-                                { id: 'products', label: 'Marketplace', icon: ShoppingCart }
+                                { id: 'products', label: 'Marketplace', icon: ShoppingBasket },
                             ].map(({ id, label, icon: Icon }) => (
                                 <button
                                     key={id}
@@ -331,8 +333,21 @@ function EnhancedFarmDashboard() {
                                     <Icon size={18} className="mr-2" />
                                     <span className="hidden sm:inline">{label}</span>
                                 </button>
-
                             ))}
+                            {/* {id: 'cart', label: 'Cart', icon: ShoppingCartIcon } */}
+                            {isLoggedIn &&
+                                <Link
+                                    to="/cart"
+                                >
+                                    <button
+                                        className={`flex items-center px-3 lg:px-6 py-4 border-b-3 transition-all duration-300 font-medium`}
+                                    >
+                                        <ShoppingCart size={18} className="mr-2" />
+                                        <span className="hidden sm:inline">Cart</span>
+                                    </button>
+                                </Link>
+                            }
+
                         </div>
                         {/* AuthButtons */}
                         <AuthButtons isLoggedIn={isLoggedIn} />
@@ -904,7 +919,7 @@ function EnhancedFarmDashboard() {
                                     Crop Yield Trends
                                 </h3>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={cropData}>
+                                    <BarChart data={crops}>
                                         <XAxis dataKey="name" />
                                         <YAxis />
                                         <Tooltip />
