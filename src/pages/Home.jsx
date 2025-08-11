@@ -644,10 +644,15 @@ function EnhancedFarmDashboard() {
                                         className="px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-medium bg-white"
                                     >
                                         <option value="all">All Categories</option>
-                                        <option value="vegetables">Vegetables</option>
-                                        <option value="fruits">Fruits</option>
-                                        <option value="grains">Grains</option>
-                                        <option value="dairy">Dairy</option>
+                                        <option value="pesticide">Pesticide</option>
+                                        <option value="herbicide">Herbicide</option>
+                                        <option value="fungicide">Fungicide</option>
+                                        <option value="fertilizer">Fertilizer</option>
+                                        <option value="growth-regulator">Growth Regulator</option>
+                                        <option value="soil-conditioner">Soil Conditioner</option>
+                                        <option value="seed-treatment">Seed Treatment</option>
+                                        <option value="other">Other</option>
+
                                     </select>
 
                                     <select

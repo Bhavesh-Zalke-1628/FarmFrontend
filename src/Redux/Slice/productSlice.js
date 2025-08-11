@@ -14,6 +14,7 @@ const initialState = {
 export const getAllProduct = createAsyncThunk(
     "product/getAll",
     async ({ limit = 10, skip = 0 }, { rejectWithValue }) => {
+        console.log("hello")
         try {
             const res = await axiosInstance.get(`/product/get-all-product?limit=${limit}&skip=${skip}`);
             return res.data;

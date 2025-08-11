@@ -12,6 +12,9 @@ function AllProduct() {
     // Redux state
     const dispatch = useDispatch();
     const { products, totalCount, loading, error } = useSelector((state) => state.products);
+
+    console.log("products", products)
+
     const { isLoggedIn } = useSelector((state) => state.auth);
     const navigate = useNavigate();
 

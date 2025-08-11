@@ -247,6 +247,12 @@ function ShowStore() {
                                                 key={product._id}
                                                 className="relative group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
                                             >
+
+
+                                                {
+                                                    console.log(product)
+                                                }
+
                                                 {/* Image */}
                                                 <div
                                                     className="h-40 bg-gray-100 relative cursor-pointer overflow-hidden"
