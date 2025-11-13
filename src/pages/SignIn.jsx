@@ -55,6 +55,7 @@ function SignIn() {
         setErrors({});
         try {
             let res;
+            console.log(res)
             if (authMethod === 'password') {
                 res = await dispatch(
                     loginAccount({
