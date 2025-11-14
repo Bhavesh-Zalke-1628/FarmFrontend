@@ -24,7 +24,7 @@ const calculateDiscountedPrice = (price, offerPercentage = 0, quantity = 1) => {
 const calculateOriginalPrice = (price, quantity = 1) => price * quantity;
 
 // Loading spinner component
-const LoadingCart = React.memo(() => (
+const LoadingCart = (() => (
     <div className="max-w-6xl mx-auto px-4 py-10 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
         <p className="mt-4 text-gray-600">Loading your cart...</p>
@@ -32,7 +32,7 @@ const LoadingCart = React.memo(() => (
 ));
 
 // Error state component
-const ErrorCart = React.memo(({ error, onRetry }) => (
+const ErrorCart = (({ error, onRetry }) => (
     <div className="max-w-6xl mx-auto px-4 py-10 text-center">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -49,7 +49,7 @@ const ErrorCart = React.memo(({ error, onRetry }) => (
 ));
 
 // Cart header (shows total/QTY and clear cart action)
-const CartHeader = React.memo(({ totalQuantity, onClearCart, hasItems }) => (
+const CartHeader = (({ totalQuantity, onClearCart, hasItems }) => (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-0">
             Your Shopping Cart ({totalQuantity})
@@ -70,7 +70,7 @@ const CartHeader = React.memo(({ totalQuantity, onClearCart, hasItems }) => (
 ));
 
 // Presentational, empty cart state
-const EmptyCart = React.memo(() => (
+const EmptyCart = (() => (
     <div className="text-center py-12 sm:py-20 bg-white rounded-lg shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 sm:h-20 w-16 sm:w-20 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -91,7 +91,7 @@ const EmptyCart = React.memo(() => (
 ));
 
 // Cart item row
-const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
+const CartItem = (({ item, onIncrement, onDecrement, onRemove }) => {
 
     const discountedPrice = useMemo(
         () => calculateDiscountedPrice(item.price, item.offerPercentage, item.quantity),
@@ -351,4 +351,4 @@ function Cart() {
     );
 }
 
-export default React.memo(Cart);
+export default (Cart);

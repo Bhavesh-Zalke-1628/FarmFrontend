@@ -13,18 +13,18 @@ const DashboardOverview = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { role, data: userData, users } = useSelector(state => state?.auth)
-
+    const { orders } = useSelector(state => state.orderDetails)
     const isAdmin = role === "admin";
     const isFarmer = role === "farmer";
-
-
+    console.log(users.length)
+    console.log(orders)
     useEffect(() => {
         const res = dispatch(getAllUsers())
     }, [dispatch])
     const stats = isAdmin ? [
-        { icon: <Users size={24} />, title: "Total Farmers", value: "153", change: "+12 new", trend: "up", color: "blue" },
-        { icon: <ShoppingBag size={24} />, title: "All Orders", value: "112", change: "+18 this week", trend: "up", color: "purple" },
-        { icon: <DollarSign size={24} />, title: "Platform Revenue", value: "₹2,15,600", change: "+25%", trend: "up", color: "green" },
+        { icon: <Users size={24} />, title: "Total Farmers", value: users.length, change: "+12 new", trend: "up", color: "blue" },
+        { icon: <ShoppingBag size={24} />, title: "All Orders", value: orders.length, change: "+18 this week", trend: "up", color: "purple" },
+        { icon: <DollarSign size={24} />, title: "Platform Revenue", value: "₹2,600", change: "+25%", trend: "up", color: "green" },
         { icon: <Leaf size={24} />, title: "Products Listed", value: "320", change: "4 new today", trend: "neutral", color: "orange" },
     ] : [
         { icon: <Package size={24} />, title: "My Products", value: "24", change: "+3 this week", trend: "up", color: "blue" },

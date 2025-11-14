@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProduct } from '../../Redux/Slice/productSlice';
 import Layout from '../../Layout/Layout';
-import ProductModal from '../../Component/Modal/ProductModal';
 import Swal from 'sweetalert2';
 import { addToCart } from '../../Redux/Slice/cartSlice';
 import ProductCard from '../../Component/ui/ProductCard';

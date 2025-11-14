@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom';
 import AuthButtons from '../Component/Comman/AuthButtons';
 import { getAllProduct } from '../Redux/Slice/productSlice';
 import { getAllCrops } from '../Redux/Slice/cropsSlice';
+import { StatCard } from '../Component/Comman/StatCards';
+import { getLocationInsights } from '../Redux/Slice/aiSlice';
 
 const WEATHER_API_KEY = 'c0767a98c8629fa2703381c21cef3eb6';
 
@@ -32,12 +34,15 @@ function EnhancedFarmDashboard() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const dispatch = useDispatch();
-    const { products = [] } = useSelector(state => state?.products || {});
+    const { products } = useSelector(state => state?.products);
     const { isLoggedIn } = useSelector(state => state?.auth)
     const { crops } = useSelector(state => state?.crops)
+    const { locationInsights } = useSelector(state => state?.ai)
+    console.log(locationInsights)
 
     useEffect(() => {
         dispatch(getAllCrops())
+
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -96,6 +101,14 @@ function EnhancedFarmDashboard() {
         fetchData();
     }, [dispatch]);
 
+
+    useEffect(() => {
+        if (locationName)
+            dispatch(getLocationInsights(locationName))
+    }, [locationName])
+
+
+
     const temperatureData = useMemo(() => {
         if (!weatherData) return [];
         const base = weatherData.main.temp;
@@ -109,16 +122,10 @@ function EnhancedFarmDashboard() {
         ];
     }, [weatherData]);
 
-    const cropData = [
-        { name: 'Tomatoes', yield: 85, area: 2.5, color: '#ef4444' },
-        { name: 'Wheat', yield: 92, area: 4.2, color: '#f59e0b' },
-        { name: 'Corn', yield: 78, area: 3.1, color: '#10b981' },
-        { name: 'Soybeans', yield: 88, area: 1.8, color: '#3b82f6' }
-    ];
 
     // Filter and sort products
     const filteredProducts = useMemo(() => {
-        let filtered = products.filter(product =>
+        let filtered = products?.filter(product =>
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
             (filterCategory === 'all' || product.category === filterCategory)
         );
@@ -167,44 +174,6 @@ function EnhancedFarmDashboard() {
                 return <Sun {...iconProps} className="text-yellow-500 drop-shadow-sm" />;
         }
     };
-
-    const StatCard = ({ icon: Icon, title, value, subtitle, trend, color = "blue", gradient = false }) => (
-        <div className={`${gradient
-            ? `bg-gradient-to-br from-${color}-500 to-${color}-600 text-white`
-            : `bg-white border border-${color}-100`
-            } rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 group hover:-translate-y-1 relative overflow-hidden`}>
-            {gradient && (
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            )}
-            <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                    <div className={`p-4 rounded-xl ${gradient ? 'bg-white/20' : `bg-${color}-100`} group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon size={28} className={gradient ? 'text-white' : `text-${color}-600`} />
-                    </div>
-                    {trend && (
-                        <div className={`flex items-center text-sm px-3 py-1 rounded-full ${gradient ? 'bg-white/20 text-white' :
-                            trend > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                            <TrendingUp size={16} className={trend < 0 ? 'rotate-180' : ''} />
-                            <span className="ml-1 font-medium">{Math.abs(trend)}%</span>
-                        </div>
-                    )}
-                </div>
-                <h3 className={`text-3xl font-black mb-2 ${gradient ? 'text-white' : 'text-gray-900'}`}>
-                    {value}
-                </h3>
-                <p className={`text-sm font-medium mb-1 ${gradient ? 'text-white/90' : 'text-gray-700'}`}>
-                    {title}
-                </p>
-                {subtitle && (
-                    <p className={`text-xs ${gradient ? 'text-white/70' : 'text-gray-500'}`}>
-                        {subtitle}
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-
 
     const COLORS = ["#10b981", "#22c55e", "#34d399", "#4ade80"];
 
@@ -313,6 +282,7 @@ function EnhancedFarmDashboard() {
             </header>
 
             <nav className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-gray-200 sticky top-0 z-50">
+
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex items-center justify-between h-20">
                         {/* Left: Navigation Tabs */}
@@ -356,9 +326,9 @@ function EnhancedFarmDashboard() {
             </nav>
 
 
-
             {/* Main Content with Enhanced Animations */}
             <main className="max-w-7xl mx-auto px-4 py-6 lg:py-12">
+
                 {activeTab === 'overview' && (
                     <div className="space-y-8 animate-fadeIn">
                         {/* Enhanced Weather Stats Grid */}
@@ -416,7 +386,7 @@ function EnhancedFarmDashboard() {
                         </div>
 
                         {/* Enhanced Charts Section */}
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 gap-8">
                             {/* Temperature Chart */}
                             <div className="xl:col-span-2 bg-white rounded-3xl shadow-xl p-6 lg:p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
@@ -470,64 +440,37 @@ function EnhancedFarmDashboard() {
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
+                        </div>
 
-                            {/* Crop Performance Chart */}
-                            {
+                        <div className="p-4 rounded-lg shadow-md bg-white border">
+                            <h2 className="text-xl font-semibold mb-3">Location Insights</h2>
 
-                                isLoggedIn &&
-                                <div className="bg-white rounded-3xl shadow-xl p-6 lg:p-8 border border-gray-100">
-                                    <h2 className="text-xl lg:text-2xl font-bold text-gray-800 flex items-center mb-6">
-                                        <Package className="mr-3 text-green-600" />
-                                        Crop Performance
-                                    </h2>
-                                    {crops?.length > 0 ? (
-                                        <>
-                                            <ResponsiveContainer width="100%" height={300}>
-                                                <PieChart>
-                                                    <Pie
-                                                        data={crops}
-                                                        cx="50%"
-                                                        cy="50%"
-                                                        innerRadius={60}
-                                                        outerRadius={100}
-                                                        paddingAngle={5}
-                                                        dataKey="quantity"
-                                                    >
+                            {/* Loading State */}
+                            {locationInsights.loading && (
+                                <p className="text-blue-600 font-medium">Loading insights...</p>
+                            )}
 
-                                                        {crops.map((entry, index) => (
-                                                            <Cell
-                                                                key={`cell-${index}`}
-                                                                fill={COLORS[index % COLORS.length]}
-                                                            />
-                                                        ))}
+                            {/* Error State */}
+                            {locationInsights.error && (
+                                <p className="text-red-600 font-medium">
+                                    Error: {locationInsights.error}
+                                </p>
+                            )}
 
-                                                    </Pie>
-                                                    <Tooltip />
-                                                </PieChart>
-                                            </ResponsiveContainer>
-                                            <div className="mt-4 space-y-2">
-                                                {crops.map((crop, index) => (
-                                                    <div key={index} className="flex items-center justify-between">
-                                                        <div className="flex items-center">
-                                                            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: crop.color }}></div>
-                                                            <span className="text-sm font-medium text-gray-700">{crop.name}</span>
-                                                        </div>
-                                                        <span className="text-sm font-bold text-gray-900">{crop.quantity} acr</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-
-                                    ) : (
-                                        <>
-                                            <p>No crops Register </p>
-                                        </>
-                                    )}
-
+                            {/* Insights Data */}
+                            {locationInsights.data && (
+                                <div className="space-y-2">
+                                    <p className="text-gray-700 whitespace-pre-line">
+                                        {locationInsights.data.success ? <>
+                                            <span>
+                                                {locationInsights.data.data}
+                                            </span>
+                                        </> : <>
+                                            byy
+                                        </>}
+                                    </p>
                                 </div>
-
-                            }
-
+                            )}
                         </div>
 
                         {/* Enhanced Recommendations with Priority System */}
@@ -609,6 +552,7 @@ function EnhancedFarmDashboard() {
                     </div>
                 )}
 
+
                 {activeTab === 'products' && (
                     <div className="space-y-8 animate-fadeIn">
                         {/* Enhanced Header with Search and Filters */}
@@ -638,22 +582,7 @@ function EnhancedFarmDashboard() {
 
                                 {/* Filters */}
                                 <div className="flex items-center gap-4 w-full lg:w-auto">
-                                    <select
-                                        value={filterCategory}
-                                        onChange={(e) => setFilterCategory(e.target.value)}
-                                        className="px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-medium bg-white"
-                                    >
-                                        <option value="all">All Categories</option>
-                                        <option value="pesticide">Pesticide</option>
-                                        <option value="herbicide">Herbicide</option>
-                                        <option value="fungicide">Fungicide</option>
-                                        <option value="fertilizer">Fertilizer</option>
-                                        <option value="growth-regulator">Growth Regulator</option>
-                                        <option value="soil-conditioner">Soil Conditioner</option>
-                                        <option value="seed-treatment">Seed Treatment</option>
-                                        <option value="other">Other</option>
 
-                                    </select>
 
                                     <select
                                         value={sortBy}
@@ -783,14 +712,11 @@ function EnhancedFarmDashboard() {
                                         <div className="mb-4">
                                             {product.offerPercentage > 0 ? (
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-2xl font-black text-green-600">
-                                                        ${(product.price * (1 - product.offerPercentage / 100)).toFixed(2)}
+                                                    <span className="text-xl font-black text-green-600">
+                                                        Rs. {(product.price * (1 - product.offerPercentage / 100)).toFixed(2)}
                                                     </span>
                                                     <span className="text-lg text-gray-500 line-through">
                                                         ${product.price}
-                                                    </span>
-                                                    <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full font-bold">
-                                                        Save ${(product.price * product.offerPercentage / 100).toFixed(2)}
                                                     </span>
                                                 </div>
                                             ) : (
@@ -997,6 +923,8 @@ function EnhancedFarmDashboard() {
                         </div>
                     </div>
                 )}
+
+
             </main>
 
 

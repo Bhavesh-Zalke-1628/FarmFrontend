@@ -72,8 +72,10 @@ import razorpaySlice from './Slice/paymentSlice';
 import productSlice from './Slice/productSlice';
 import cartSlice from './Slice/cartSlice';
 import orderPaymentSlice from "./Slice/orderPaymentSlice";
+import orderDetailsSlice from "./Slice/orderDetailsSlice";
 import farmSlice from './Slice/farmSlice';
 import cropsSlice from './Slice/cropsSlice'
+import aiSlice from './Slice/aiSlice'
 
 
 const store = configureStore({
@@ -84,8 +86,10 @@ const store = configureStore({
         products: productSlice,
         cart: cartSlice,
         order: orderPaymentSlice,
+        orderDetails: orderDetailsSlice,
         farm: farmSlice,
-        crops: cropsSlice
+        crops: cropsSlice,
+        ai: aiSlice
     },
     devTools: true
 })

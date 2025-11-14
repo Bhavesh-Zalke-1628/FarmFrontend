@@ -80,8 +80,8 @@ function ProductModal({ product, onClose }) {
                         <button
                             onClick={() => setIsWishlisted(!isWishlisted)}
                             className={`p-2 rounded-full transition-colors ${isWishlisted
-                                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-red-500'
+                                ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-red-500'
                                 }`}
                         >
                             <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
@@ -224,8 +224,8 @@ function ProductModal({ product, onClose }) {
                                     onClick={handleAddToCart}
                                     disabled={loading || product.outOfStock}
                                     className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${product.outOfStock
-                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                            : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                                         }`}
                                 >
                                     {loading ? (
@@ -271,8 +271,8 @@ function ProductModal({ product, onClose }) {
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
                                         className={`pb-3 px-1 text-sm font-medium capitalize transition-colors border-b-2 ${activeTab === tab
-                                                ? 'border-green-600 text-green-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                            ? 'border-green-600 text-green-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
                                             }`}
                                     >
                                         {tab}
@@ -349,53 +349,6 @@ function ProductModal({ product, onClose }) {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    );
-}
-
-// Mock product data for demonstration
-const mockProduct = {
-    _id: "64f7a2b5c8d9e1234567890a",
-    name: "Premium Garden Pesticide Spray",
-    description: "Effective organic pesticide for garden protection. Safe for plants and environment while providing maximum pest control.",
-    price: 299,
-    offerPercentage: 20,
-    quantity: 45,
-    outOfStock: false,
-    company: "EcoGarden Pro",
-    createdAt: "2024-01-15T10:30:00.000Z",
-    img: {
-        secure_url: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=400&fit=crop"
-    },
-    content: {
-        targetPests: ["Aphids", "Spider Mites", "Whiteflies", "Thrips"],
-        usageAreas: ["Vegetable Gardens", "Flower Beds", "Fruit Trees", "Indoor Plants"],
-        activeIngredients: ["Neem Oil", "Pyrethrin", "Potassium Soap"]
-    }
-};
-
-export default function App() {
-    const [showModal, setShowModal] = useState(false);
-
-    return (
-        <div className="min-h-screen bg-gray-100 p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">Enhanced Product Modal Demo</h1>
-
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                    Open Product Modal
-                </button>
-
-                {showModal && (
-                    <ProductModal
-                        product={mockProduct}
-                        onClose={() => setShowModal(false)}
-                    />
-                )}
             </div>
         </div>
     );
